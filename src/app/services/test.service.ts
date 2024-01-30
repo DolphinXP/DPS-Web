@@ -5,11 +5,11 @@ import {Observable} from "rxjs";
 @Injectable({
   providedIn: 'root'
 })
-export class NomadService {
-  private readonly NOMAD_API_URL = 'http://localhost:8080/api/v1/nomad';
+export class TestService {
+  private readonly TEST_API_URL = 'http://localhost:8080/api/v1/test';
   constructor(private http: HttpClient) { }
-  getJobs() : Observable<any>{
-    let url = this.NOMAD_API_URL + "/jobs";
+  getTests() : Observable<any>{
+    let url = this.TEST_API_URL + "/all";
     return this.http.get(url);
   }
 }
