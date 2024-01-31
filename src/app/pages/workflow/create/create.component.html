@@ -1,30 +1,56 @@
 <div class="container">
-  <div class="command-panel">
-    <div>Create Workflow</div>
+
+  <nz-card [nzExtra]="extraTemplate" nzSize="small" nzTitle="Create Workflow">
+    <form [formGroup]="workflowStepForm" nz-form>
+      <nz-form-item>
+        <nz-form-label nzFor="workflowName">Workflow Name</nz-form-label>
+        <nz-form-control>
+          <input #workflowNameInput formControlName="workflowName" id="workflowName" nz-input/>
+        </nz-form-control>
+      </nz-form-item>
+
+      <nz-form-item>
+        <nz-form-label nzFor="name" nzRequired>Name</nz-form-label>
+        <nz-form-control nzErrorTip="Please input name!">
+          <input #nameInput formControlName="name" id="name" nz-input/>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="processPath" nzRequired>Process path</nz-form-label>
+        <nz-form-control nzErrorTip="Please input process path!">
+          <input formControlName="processPath" id="processPath" nz-input/>
+        </nz-form-control>
+      </nz-form-item>
+      <nz-form-item>
+        <nz-form-label nzFor="description">Description</nz-form-label>
+        <nz-form-control>
+          <input formControlName="description" id="description" nz-input/>
+        </nz-form-control>
+      </nz-form-item>
+    </form>
+  </nz-card>
+  <ng-template #extraTemplate>
     <div>
       <!-- Add button -->
-      <button (click)="addWorkflowStep()" nz-button>Add+</button>
+      <button (click)="addWorkflowStep()" nz-button>{{ buttonText }}</button>
+      <!-- Delete button -->
+      <button (click)="removeWorkflowStep()" [disabled]="disableDelButton" nz-button>Del-</button>
       <!-- Submit button -->
-      <button (click)="onSubmit()" nz-button nzType="primary" style="margin-left: 10px;">Submit</button>
-    </div>
-  </div>
+      <button (click)="onSubmit()" nz-button nzType="primary">Submit</button>
 
-  <div class="add-gap"></div>
-  <!-- Workflow name input field -->
-  <div class="step-item">
-    <label>Workflow Name: </label>
-    <input [(ngModel)]="workflowName" nz-input placeholder="Workflow Name" style="width: 80%" type="text">
-  </div>
-
-  <div class="add-gap"></div>
-  <!-- Display WorkflowStepComponents -->
-  <div *ngFor="let step of workflowSteps; let i = index">
-    <div class="step-item">
-      <div>
-        <label>Step {{ i + 1 }}: </label>
-        <app-workflow-step></app-workflow-step>
-      </div>
-      <button (click)="removeWorkflowStep(step)" nz-button>X</button>
     </div>
-  </div>
+  </ng-template>
+  <div class="add-gap"></div>
+
+  <nz-card nzSize="small" nzTitle="Preview">
+    <nz-steps (nzIndexChange)="onIndexChange($event)" [nzCurrent]="index" nzDirection="vertical"
+              nzSize="small">
+
+      <nz-step *ngFor="let step of workflowSteps;"
+               nzDescription="{{step.processPath + ' ' + step.description}}"
+               nzTitle="{{step.name}}"></nz-step>
+
+    </nz-steps>
+  </nz-card>
+
 </div>
