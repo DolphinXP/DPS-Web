@@ -3,7 +3,7 @@ import {TestService} from "../../../services/test.service";
 import {JsonPipe, NgForOf} from "@angular/common";
 
 @Component({
-  selector: 'test-list',
+  selector: 'app-test-list',
   standalone: true,
   imports: [
     NgForOf,

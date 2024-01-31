@@ -1,0 +1,15 @@
+<div class="container">
+  <div *ngFor="let workflow of workflows">
+    <nz-card [nzExtra]="extraTemplate" nzSize="small" nzTitle="{{workflow.WorkflowName}}">
+      <div style="background: #eeeeee">
+        <app-workflow-list-item></app-workflow-list-item>
+      </div>
+    </nz-card>
+    <ng-template #extraTemplate>
+      <button nz-button>X</button>
+    </ng-template>
+    <div class="add-gap"></div>
+  </div>
+</div>
+
+<nz-pagination [nzPageIndex]="1" [nzTotal]="50"></nz-pagination>

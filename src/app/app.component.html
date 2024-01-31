@@ -25,10 +25,22 @@
           </li>
         </ul>
       </li>
+
+      <li nz-submenu nzOpen nzTitle="Workflow" nzIcon="form">
+        <ul>
+          <li nz-menu-item nzMatchRouter>
+            <a routerLink="/workflow/list">List</a>
+          </li>
+          <li nz-menu-item nzMatchRouter>
+            <a routerLink="/workflow/create">Create</a>
+          </li>
+        </ul>
+      </li>
+
       <li nz-submenu nzOpen nzTitle="Nomad" nzIcon="form">
         <ul>
           <li nz-menu-item nzMatchRouter>
-            <a routerLink="/nomad/list">List Jobs</a>
+            <a routerLink="/nomad/list">List</a>
           </li>
         </ul>
       </li>
@@ -36,7 +48,7 @@
       <li nz-submenu nzOpen nzTitle="Test" nzIcon="form">
         <ul>
           <li nz-menu-item nzMatchRouter>
-            <a routerLink="/test/all">All Tests</a>
+            <a routerLink="/test/all">List</a>
           </li>
         </ul>
       </li>

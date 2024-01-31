@@ -1,0 +1,30 @@
+<div class="container">
+  <div class="command-panel">
+    <div>Create Workflow</div>
+    <div>
+      <!-- Add button -->
+      <button (click)="addWorkflowStep()" nz-button>Add+</button>
+      <!-- Submit button -->
+      <button (click)="onSubmit()" nz-button nzType="primary" style="margin-left: 10px;">Submit</button>
+    </div>
+  </div>
+
+  <div class="add-gap"></div>
+  <!-- Workflow name input field -->
+  <div class="step-item">
+    <label>Workflow Name: </label>
+    <input [(ngModel)]="workflowName" nz-input placeholder="Workflow Name" style="width: 80%" type="text">
+  </div>
+
+  <div class="add-gap"></div>
+  <!-- Display WorkflowStepComponents -->
+  <div *ngFor="let step of workflowSteps; let i = index">
+    <div class="step-item">
+      <div>
+        <label>Step {{ i + 1 }}: </label>
+        <app-workflow-step></app-workflow-step>
+      </div>
+      <button (click)="removeWorkflowStep(step)" nz-button>X</button>
+    </div>
+  </div>
+</div>

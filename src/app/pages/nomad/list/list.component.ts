@@ -4,7 +4,7 @@ import {NzTableComponent} from "ng-zorro-antd/table";
 import {NgForOf} from "@angular/common";
 
 @Component({
-  selector: 'nomad-job-list',
+  selector: 'app-nomad-job-list',
   standalone: true,
   templateUrl: './list.component.html',
   imports: [
