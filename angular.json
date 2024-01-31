@@ -25,7 +25,7 @@
               "src/assets"
             ],
             "styles": [
-              "./node_modules/ng-zorro-antd/ng-zorro-antd.min.css",
+              "./node_modules/ng-zorro-antd/ng-zorro-antd.css",
               "src/styles.css"
             ],
             "scripts": []
@@ -86,6 +86,9 @@
             ],
             "styles": [
               "./node_modules/ng-zorro-antd/ng-zorro-antd.min.css",
+              "./node_modules/ng-zorro-antd/resizable/style/index.min.css",
+              "./node_modules/ng-zorro-antd/code-editor/style/index.min.css",
+              "./node_modules/ng-zorro-antd/graph/style/index.min.css",
               "src/styles.css"
             ],
             "scripts": []

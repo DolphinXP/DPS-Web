@@ -156,7 +156,8 @@ export class CreateComponent {
 
     const result = {
       WorkflowName: this.workflowName,
-      WorkflowSteps: this.workflowSteps.slice(1, -1),
+      WorkflowSteps: this.workflowSteps,
+      //WorkflowSteps: this.workflowSteps.slice(1, -1),
     };
 
     console.log(JSON.stringify(result));

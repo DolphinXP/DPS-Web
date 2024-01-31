@@ -1,15 +1,38 @@
 <div class="container">
-  <div *ngFor="let workflow of workflows">
-    <nz-card [nzExtra]="extraTemplate" nzSize="small" nzTitle="{{workflow.WorkflowName}}">
-      <div style="background: #eeeeee">
-        <app-workflow-list-item></app-workflow-list-item>
-      </div>
-    </nz-card>
-    <ng-template #extraTemplate>
-      <button nz-button>X</button>
-    </ng-template>
-    <div class="add-gap"></div>
-  </div>
+
+  <nz-table #nzTable [nzData]="workflows" nzBordered nzTableLayout="fixed">
+    <thead>
+    <tr>
+      <th nzWidth="60px"></th>
+      <th>Name</th>
+      <th>Create time</th>
+    </tr>
+    </thead>
+    <tbody>
+    <ng-container *ngFor="let data of nzTable.data; let i=index">
+      <tr>
+        <td (nzExpandChange)="onExpandChange(data.id, $event)"
+            [nzExpand]="expandSet.has(data.id)"></td>
+        <td>{{ data.WorkflowName }}</td>
+        <td>{{ data.CreateTime }}</td>
+
+      </tr>
+      <tr [nzExpand]="expandSet.has(data.id)">
+
+        <td colspan="3">
+          <nz-card style="margin: 10px;">
+            <nz-steps nzDirection="vertical" nzSize="small">
+              <nz-step *ngFor="let step of data.WorkflowSteps ;"
+                       nzDescription="{{step.processPath + ' ' + step.description}}"
+                       nzTitle="{{step.name}}"></nz-step>
+
+            </nz-steps>
+
+          </nz-card>
+        </td>
+      </tr>
+    </ng-container>
+    </tbody>
+  </nz-table>
 </div>
 
-<nz-pagination [nzPageIndex]="1" [nzTotal]="50"></nz-pagination>
