@@ -1,8 +1,8 @@
-import {Component, ElementRef, ViewChild} from '@angular/core';
+import {Component, ElementRef, Inject, OnInit, ViewChild} from '@angular/core';
 import {CdkDrag, CdkDragDrop, CdkDropList, moveItemInArray} from '@angular/cdk/drag-drop';
 import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {WorkflowService} from "../../../services/workflow.service";
-import {NzModalModule, NzModalRef, NzModalService} from "ng-zorro-antd/modal";
+import {NZ_MODAL_DATA, NzModalModule, NzModalRef, NzModalService} from "ng-zorro-antd/modal";
 import {NzFormModule} from "ng-zorro-antd/form";
 import {NzInputModule} from "ng-zorro-antd/input";
 import {NzCardModule} from "ng-zorro-antd/card";
@@ -34,29 +34,43 @@ import {NzPopconfirmModule} from "ng-zorro-antd/popconfirm";
   templateUrl: './create.component.html',
   styleUrls: ['./create.component.css']
 })
-export class CreateComponent {
+export class CreateComponent implements OnInit {
   @ViewChild('nameInput') nameInput!: ElementRef;
   selectedIndex = 0;
   updateMode = false;
   workflowSteps: any[] = [];
   workflowName: string = '';
-  workflowStepForm: FormGroup;
+  workflowForm: FormGroup;
 
-  constructor(private modalRef: NzModalRef, private workflowService: WorkflowService, private formBuilder: FormBuilder, private modal: NzModalService) {
-    this.workflowStepForm = this.formBuilder.group({
+  constructor(@Inject(NZ_MODAL_DATA) public workflowData: any, private modalRef: NzModalRef, private workflowService: WorkflowService, private formBuilder: FormBuilder, private modal: NzModalService) {
+    this.workflowForm = this.formBuilder.group({
       workflowName: [''],
       name: ['', Validators.required],
       processPath: ['', Validators.required],
       description: [''],
     });
+
   }
 
   ngOnInit(): void {
+    if (this.workflowData) {
+      const data = this.workflowData.workflow;
+
+      // Initialize the form with the workflow data
+      this.workflowForm.patchValue({
+        workflowName: data.WorkflowName,
+      });
+
+      // If workflowSteps is an array, assign it to this.workflowSteps
+      if (Array.isArray(data.WorkflowSteps)) {
+        this.workflowSteps = data.WorkflowSteps;
+      }
+    }
   }
 
   addWorkflowStep() {
-    if (!this.workflowStepForm.valid) {
-      Object.values(this.workflowStepForm.controls).forEach(control => {
+    if (!this.workflowForm.valid) {
+      Object.values(this.workflowForm.controls).forEach(control => {
         if (control.invalid) {
           control.markAsDirty();
           control.updateValueAndValidity({onlySelf: true});
@@ -66,9 +80,9 @@ export class CreateComponent {
     }
 
 // Get the values from the form fields
-    const name = this.workflowStepForm.get('name')?.value;
-    const processPath = this.workflowStepForm.get('processPath')?.value;
-    const description = this.workflowStepForm.get('description')?.value;
+    const name = this.workflowForm.get('name')?.value;
+    const processPath = this.workflowForm.get('processPath')?.value;
+    const description = this.workflowForm.get('description')?.value;
 
     // Create a new object with the form field values
     const newStep = {
@@ -79,9 +93,6 @@ export class CreateComponent {
 
     // Push the new object into the workflowSteps array
     if (this.updateMode) {
-      //this.deleteWorkflowStep(this.selectedIndex);
-      console.log(this.workflowSteps);
-      console.log(this.selectedIndex);
       this.workflowSteps.splice(this.selectedIndex, 1, newStep);
     } else {
       this.workflowSteps.push(newStep);
@@ -98,26 +109,40 @@ export class CreateComponent {
   }
 
   onSubmit() {
-    this.workflowName = this.workflowStepForm.get('workflowName')?.value.trim();
+    this.workflowName = this.workflowForm.get('workflowName')?.value.trim();
     if (!this.workflowName) {
       this.modalInfo('Please enter a workflow name.');
       return;
     }
-    if (this.workflowSteps.length <= 2) {
+    if (this.workflowSteps.length <= 0) {
       this.modalInfo('Please add at least one step to the workflow.');
       return;
     }
 
-    const result = {
-      WorkflowName: this.workflowName,
-      WorkflowSteps: this.workflowSteps,
-    };
 
-    console.log(JSON.stringify(result));
-    this.workflowService.createWorkflow(result).subscribe(data => {
-      console.log(data);
-      this.destroyModal();
-    });
+    if (this.workflowData) {// update
+      const id = this.workflowData.workflow.id;
+      const result = {
+        id: id,
+        WorkflowName: this.workflowName,
+        WorkflowSteps: this.workflowSteps,
+      };
+
+      this.workflowService.updateWorkflow(id, result).subscribe(data => {
+        console.log(data);
+        this.destroyModal();
+      });
+    } else { // add
+      const result = {
+        WorkflowName: this.workflowName,
+        WorkflowSteps: this.workflowSteps,
+      };
+
+      this.workflowService.createWorkflow(result).subscribe(data => {
+        console.log(data);
+        this.destroyModal();
+      });
+    }
   }
 
   modalInfo(message: string): void {
@@ -144,7 +169,7 @@ export class CreateComponent {
       const item = this.workflowSteps[index];
 
       // Set the form fields with the values from the item
-      this.workflowStepForm.patchValue({
+      this.workflowForm.patchValue({
         name: item.name,
         processPath: item.processPath,
         description: item.description

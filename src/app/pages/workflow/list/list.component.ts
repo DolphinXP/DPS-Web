@@ -53,5 +53,16 @@ export class ListComponent {
     });
   }
 
+  editWorkflow(id: string): void {
+    const workflow = this.workflows.find((w: { id: string; }) => w.id === id);
+
+    this.modalService.create({
+      nzTitle: 'Workflow form',
+      nzContent: CreateComponent,
+      nzData: {
+        workflow: workflow
+      }
+    });
+  }
 
 }

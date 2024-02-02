@@ -7,8 +7,8 @@
     <thead>
     <tr>
       <th nzWidth="60px"></th>
-      <th>Name</th>
-      <th>Create time</th>
+      <th nzWidth="50%">Name</th>
+      <th nzWidth="30%">Create time</th>
       <th>Action</th>
     </tr>
     </thead>
@@ -22,7 +22,7 @@
         <td>
           <button nz-button>View</button>
           <nz-divider nzType="vertical"></nz-divider>
-          <button nz-button>Edit</button>
+          <button (click)="editWorkflow(data.id)" nz-button>Edit</button>
           <nz-divider nzType="vertical"></nz-divider>
           <button class="button-warning" nz-button>Delete</button>
         </td>

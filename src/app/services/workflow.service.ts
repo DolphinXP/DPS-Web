@@ -21,4 +21,9 @@ export class WorkflowService {
     let url = this.WORKFLOW_API_URL + "/create";
     return this.http.post(url, workflow);
   }
+
+  updateWorkflow(id: string, workflow: any): Observable<any> {
+    let url = this.WORKFLOW_API_URL + `/update/${id}`;
+    return this.http.put(url, workflow);
+  }
 }
