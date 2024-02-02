@@ -30,18 +30,7 @@
       <li nz-submenu nzIcon="form" nzOpen nzTitle="Workflow">
         <ul>
           <li nz-menu-item nzMatchRouter>
-            <a routerLink="/workflow/list">List</a>
-          </li>
-          <li nz-menu-item nzMatchRouter>
-            <a routerLink="/workflow/create">Create</a>
-          </li>
-        </ul>
-      </li>
-
-      <li nz-submenu nzIcon="form" nzOpen nzTitle="Nomad">
-        <ul>
-          <li nz-menu-item nzMatchRouter>
-            <a routerLink="/nomad/list">List</a>
+            <a routerLink="/workflow/list">Workflow templates</a>
           </li>
         </ul>
       </li>
@@ -49,7 +38,10 @@
       <li nz-submenu nzIcon="form" nzOpen nzTitle="Test">
         <ul>
           <li nz-menu-item nzMatchRouter>
-            <a routerLink="/test/all">List</a>
+            <a routerLink="/nomad/list">Nomad list</a>
+          </li>
+          <li nz-menu-item nzMatchRouter>
+            <a routerLink="/test/all">Just list (test mongo)</a>
           </li>
         </ul>
       </li>

@@ -66,7 +66,7 @@ export class WorkflowCreateComponent implements OnInit {
       if (Array.isArray(data.WorkflowSteps)) {
         this.workflowSteps = data.WorkflowSteps;
       }
-      this.warningMessage = "The modified workflow only takes effect for tasks created afterwards.";
+      this.warningMessage = "* The modified workflow only takes effect for tasks created afterwards.";
     }
   }
 

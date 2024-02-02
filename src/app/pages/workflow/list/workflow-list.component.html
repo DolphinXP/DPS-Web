@@ -1,5 +1,5 @@
 <div class="command-panel">
-  <div>Workflow Design</div>
+  <div>Workflow templates</div>
   <button (click)="showModal()" nz-button nzType="primary">Add+</button>
 </div>
 <div class="container">
@@ -8,7 +8,8 @@
     <tr>
       <th nzWidth="60px">No</th>
       <th nzWidth="50%">Name</th>
-      <th nzWidth="30%">Create time</th>
+      <th nzWidth="10%">Steps</th>
+      <th nzWidth="20%">Create time</th>
       <th>Action</th>
     </tr>
     </thead>
@@ -16,6 +17,7 @@
     <tr *ngFor="let data of nzTable.data; let i=index">
       <td>{{ i + 1 }}</td>
       <td>{{ data.WorkflowName }}</td>
+      <td>{{ data.WorkflowSteps.length }}</td>
       <td>{{ data.CreateTime | date:'yyyy-MM-dd HH:mm:ss':'UTC' }}</td>
       <td>
         <a (click)="viewWorkflow(data.id)">View</a>
