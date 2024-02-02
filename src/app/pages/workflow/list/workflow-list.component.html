@@ -1,0 +1,36 @@
+<div class="command-panel">
+  <div>Workflow Design</div>
+  <button (click)="showModal()" nz-button nzType="primary">Add+</button>
+</div>
+<div class="container">
+  <nz-table #nzTable [nzData]="workflows" nzBordered nzSize="small" nzTableLayout="fixed">
+    <thead>
+    <tr>
+      <th nzWidth="60px">No</th>
+      <th nzWidth="50%">Name</th>
+      <th nzWidth="30%">Create time</th>
+      <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let data of nzTable.data; let i=index">
+      <td>{{ i + 1 }}</td>
+      <td>{{ data.WorkflowName }}</td>
+      <td>{{ data.CreateTime | date:'yyyy-MM-dd HH:mm:ss':'UTC' }}</td>
+      <td>
+        <a (click)="viewWorkflow(data.id)">View</a>
+        <nz-divider nzType="vertical"></nz-divider>
+        <a (click)="editWorkflow(data.id)">Edit</a>
+        <nz-divider nzType="vertical"></nz-divider>
+        <a (nzOnConfirm)="deleteWorkflow(data.id)" nz-popconfirm nzPopconfirmTitle="Sure to delete?">Del
+        </a>
+      </td>
+    </tr>
+
+    </tbody>
+
+  </nz-table>
+</div>
+
+
+

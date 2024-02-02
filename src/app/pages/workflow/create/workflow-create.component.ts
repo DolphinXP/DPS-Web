@@ -31,16 +31,17 @@ import {NzPopconfirmModule} from "ng-zorro-antd/popconfirm";
     NzModalModule,
     NzPopconfirmModule
   ],
-  templateUrl: './create.component.html',
-  styleUrls: ['./create.component.css']
+  templateUrl: './workflow-create.component.html',
+  styleUrls: ['./workflow-create.component.css']
 })
-export class CreateComponent implements OnInit {
+export class WorkflowCreateComponent implements OnInit {
   @ViewChild('nameInput') nameInput!: ElementRef;
   selectedIndex = 0;
   updateMode = false;
   workflowSteps: any[] = [];
   workflowName: string = '';
   workflowForm: FormGroup;
+  warningMessage: string = '';
 
   constructor(@Inject(NZ_MODAL_DATA) public workflowData: any, private modalRef: NzModalRef, private workflowService: WorkflowService, private formBuilder: FormBuilder, private modal: NzModalService) {
     this.workflowForm = this.formBuilder.group({
@@ -65,6 +66,7 @@ export class CreateComponent implements OnInit {
       if (Array.isArray(data.WorkflowSteps)) {
         this.workflowSteps = data.WorkflowSteps;
       }
+      this.warningMessage = "The modified workflow only takes effect for tasks created afterwards.";
     }
   }
 

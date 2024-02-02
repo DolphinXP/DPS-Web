@@ -1,0 +1,8 @@
+<nz-card nzTitle="{{workflow.WorkflowName}}" style="margin: 10px;">
+
+  <nz-steps nzDirection="vertical" nzSize="small">
+    <nz-step *ngFor="let step of workflow.WorkflowSteps ;"
+             nzDescription="{{step.processPath + ' ' + step.description}}"
+             nzTitle="{{step.name}}"></nz-step>
+  </nz-steps>
+</nz-card>

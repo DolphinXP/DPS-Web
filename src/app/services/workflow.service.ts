@@ -26,4 +26,9 @@ export class WorkflowService {
     let url = this.WORKFLOW_API_URL + `/update/${id}`;
     return this.http.put(url, workflow);
   }
+  
+  deleteWorkflow(id: string): Observable<any> {
+    let url = `${this.WORKFLOW_API_URL}/delete/${id}`;
+    return this.http.delete(url);
+  }
 }

@@ -39,7 +39,7 @@
     </nz-form-control>
   </div>
 </nz-form-item>
-<div class="container">
+<div class="container-min">
   <nz-table #nzTable [nzData]="workflowSteps" [nzPageSize]="3"
             nzBordered nzSize="small">
     <thead>
@@ -71,3 +71,5 @@
   <button (click)="destroyModal()" nz-button nzType="default">Cancel</button>
   <button (click)="onSubmit()" nz-button nzType="primary">Ok</button>
 </div>
+
+<span class="warning-message">*{{ warningMessage }}</span>
