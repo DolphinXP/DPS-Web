@@ -1,20 +1,19 @@
 import {Component} from '@angular/core';
-import {NzStepComponent, NzStepsComponent} from "ng-zorro-antd/steps";
+import {NzStepsModule} from "ng-zorro-antd/steps";
 
 @Component({
-  selector: 'app-workflow-list-item',
-  standalone: true,
-  imports: [
-    NzStepsComponent,
-    NzStepComponent
-  ],
-  templateUrl: './list-item.component.html',
-  styleUrl: './list-item.component.css'
+    selector: 'app-workflow-list-item',
+    standalone: true,
+    imports: [
+        NzStepsModule
+    ],
+    templateUrl: './list-item.component.html',
+    styleUrls: ['./list-item.component.css']
 })
 export class ListItemComponent {
-  index = 0;
+    index = 0;
 
-  onIndexChange(event: number): void {
-    this.index = event;
-  }
+    onIndexChange(event: number): void {
+        this.index = event;
+    }
 }

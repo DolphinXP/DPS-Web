@@ -1,37 +1,28 @@
 import {Component, ElementRef, ViewChild} from '@angular/core';
-import {NgForOf} from "@angular/common";
-import {FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators} from "@angular/forms";
+import {FormBuilder, FormGroup, ReactiveFormsModule, Validators} from "@angular/forms";
 import {WorkflowService} from "../../../services/workflow.service";
-import {NzButtonComponent} from "ng-zorro-antd/button";
-import {NzInputDirective} from "ng-zorro-antd/input";
-import {NzStepComponent, NzStepsComponent} from "ng-zorro-antd/steps";
-import {NzCardComponent} from "ng-zorro-antd/card";
-import {NzFormControlComponent, NzFormDirective, NzFormItemComponent, NzFormLabelComponent} from "ng-zorro-antd/form";
-import {NzColDirective} from "ng-zorro-antd/grid";
-import {NzModalComponent, NzModalContentDirective, NzModalService} from "ng-zorro-antd/modal";
+import {NzModalService} from "ng-zorro-antd/modal";
+import {NzFormModule} from "ng-zorro-antd/form";
+import {NzInputModule} from "ng-zorro-antd/input";
+import {NzCardModule} from "ng-zorro-antd/card";
+import {NzStepsModule} from "ng-zorro-antd/steps";
+import {NgForOf} from "@angular/common";
+import {NzButtonModule} from "ng-zorro-antd/button";
 
 @Component({
   selector: 'app-workflow-create',
   standalone: true,
   imports: [
-    NgForOf,
-    FormsModule,
-    NzButtonComponent,
-    NzInputDirective,
-    NzStepsComponent,
-    NzStepComponent,
-    NzCardComponent,
-    NzFormItemComponent,
-    NzFormControlComponent,
-    NzFormLabelComponent,
-    NzFormDirective,
-    NzColDirective,
+    NzFormModule,
     ReactiveFormsModule,
-    NzModalComponent,
-    NzModalContentDirective
+    NzInputModule,
+    NzCardModule,
+    NzStepsModule,
+    NgForOf,
+    NzButtonModule
   ],
   templateUrl: './create.component.html',
-  styleUrl: './create.component.css'
+  styleUrls: ['./create.component.css']
 })
 export class CreateComponent {
   @ViewChild('nameInput') nameInput!: ElementRef;

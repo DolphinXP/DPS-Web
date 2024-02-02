@@ -11,11 +11,11 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular-devkit/build-angular:browser",
           "options": {
             "outputPath": "dist/dps-web",
             "index": "src/index.html",
-            "browser": "src/main.ts",
+            "main": "src/main.ts",
             "polyfills": [
               "zone.js"
             ],
@@ -25,7 +25,7 @@
               "src/assets"
             ],
             "styles": [
-              "./node_modules/ng-zorro-antd/ng-zorro-antd.css",
+              "./node_modules/ng-zorro-antd/ng-zorro-antd.min.css",
               "src/styles.css"
             ],
             "scripts": []
@@ -47,9 +47,12 @@
               "outputHashing": "all"
             },
             "development": {
+              "buildOptimizer": false,
               "optimization": false,
+              "vendorChunk": true,
               "extractLicenses": false,
-              "sourceMap": true
+              "sourceMap": true,
+              "namedChunks": true
             }
           },
           "defaultConfiguration": "production"
@@ -58,10 +61,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "DPS-Web:build:production"
+              "browserTarget": "DPS-Web:build:production"
             },
             "development": {
-              "buildTarget": "DPS-Web:build:development"
+              "browserTarget": "DPS-Web:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -69,7 +72,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "DPS-Web:build"
+            "browserTarget": "DPS-Web:build"
           }
         },
         "test": {
@@ -86,9 +89,6 @@
             ],
             "styles": [
               "./node_modules/ng-zorro-antd/ng-zorro-antd.min.css",
-              "./node_modules/ng-zorro-antd/resizable/style/index.min.css",
-              "./node_modules/ng-zorro-antd/code-editor/style/index.min.css",
-              "./node_modules/ng-zorro-antd/graph/style/index.min.css",
               "src/styles.css"
             ],
             "scripts": []

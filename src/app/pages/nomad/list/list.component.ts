@@ -1,6 +1,6 @@
 import {Component} from '@angular/core';
 import {NomadService} from "../../../services/nomad.service";
-import {NzTableComponent} from "ng-zorro-antd/table";
+import {NzTableModule} from "ng-zorro-antd/table";
 import {NgForOf} from "@angular/common";
 
 @Component({
@@ -8,13 +8,14 @@ import {NgForOf} from "@angular/common";
   standalone: true,
   templateUrl: './list.component.html',
   imports: [
-    NzTableComponent,
+    NzTableModule,
     NgForOf
   ],
-  styleUrl: './list.component.css'
+  styleUrls: ['./list.component.css']
 })
 export class ListComponent {
-  jobs:any;
+  jobs: any;
+
   constructor(private nomadService: NomadService) {
     this.nomadService.getJobs().subscribe(data => {
       this.jobs = data.data;
@@ -30,7 +31,7 @@ export class ListComponent {
   formatTime(time: number) {
     let date = new Date(time / 1000000);
     let formattedDate = date.getFullYear() + '-' +
-      ('0' + (date.getMonth()+1)).slice(-2) + '-' +
+      ('0' + (date.getMonth() + 1)).slice(-2) + '-' +
       ('0' + date.getDate()).slice(-2) + ' ' +
       ('0' + date.getHours()).slice(-2) + ':' +
       ('0' + date.getMinutes()).slice(-2) + ':' +

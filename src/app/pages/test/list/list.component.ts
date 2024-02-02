@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {Component} from '@angular/core';
 import {TestService} from "../../../services/test.service";
 import {JsonPipe, NgForOf} from "@angular/common";
 
@@ -10,12 +10,12 @@ import {JsonPipe, NgForOf} from "@angular/common";
     JsonPipe
   ],
   templateUrl: './list.component.html',
-  styleUrl: './list.component.css'
+  styleUrls: ['./list.component.css']
 })
 export class ListComponent {
   tests: any;
 
-  constructor(private testService: TestService){
+  constructor(private testService: TestService) {
     this.testService.getTests().subscribe(data => {
       this.tests = data.data;
       console.log(data);

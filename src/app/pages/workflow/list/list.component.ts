@@ -1,32 +1,21 @@
 import {Component} from '@angular/core';
 import {WorkflowService} from "../../../services/workflow.service";
-import {NzTableComponent, NzTdAddOnComponent, NzThMeasureDirective, NzTrExpandDirective} from "ng-zorro-antd/table";
-import {JsonPipe, NgForOf} from "@angular/common";
-import {ListItemComponent} from "../list-item/list-item.component";
-import {NzCardComponent} from "ng-zorro-antd/card";
-import {NzButtonComponent} from "ng-zorro-antd/button";
-import {NzPaginationComponent} from "ng-zorro-antd/pagination";
-import {NzStepComponent, NzStepsComponent} from "ng-zorro-antd/steps";
+import {NzTableModule} from "ng-zorro-antd/table";
+import {NgForOf} from "@angular/common";
+import {NzStepsModule} from "ng-zorro-antd/steps";
+import {NzCardModule} from "ng-zorro-antd/card";
 
 @Component({
   selector: 'app-workflow-list',
   standalone: true,
   templateUrl: './list.component.html',
   imports: [
-    NzTableComponent,
-    NzTdAddOnComponent,
+    NzTableModule,
     NgForOf,
-    ListItemComponent,
-    NzCardComponent,
-    NzButtonComponent,
-    NzPaginationComponent,
-    NzThMeasureDirective,
-    NzTrExpandDirective,
-    JsonPipe,
-    NzStepComponent,
-    NzStepsComponent
+    NzStepsModule,
+    NzCardModule
   ],
-  styleUrl: './list.component.css'
+  styleUrls: ['./list.component.css']
 })
 export class ListComponent {
   workflows: any;
