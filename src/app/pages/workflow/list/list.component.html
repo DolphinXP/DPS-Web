@@ -1,11 +1,15 @@
+<div class="command-panel">
+  <div>Workflow Design</div>
+  <button (click)="showModal()" nz-button nzType="primary">Add+</button>
+</div>
 <div class="container">
-
-  <nz-table #nzTable [nzData]="workflows" nzBordered nzTableLayout="fixed">
+  <nz-table #nzTable [nzData]="workflows" nzBordered nzSize="small" nzTableLayout="fixed">
     <thead>
     <tr>
       <th nzWidth="60px"></th>
       <th>Name</th>
       <th>Create time</th>
+      <th>Action</th>
     </tr>
     </thead>
     <tbody>
@@ -14,25 +18,37 @@
         <td (nzExpandChange)="onExpandChange(data.id, $event)"
             [nzExpand]="expandSet.has(data.id)"></td>
         <td>{{ data.WorkflowName }}</td>
-        <td>{{ data.CreateTime }}</td>
-
-      </tr>
-      <tr [nzExpand]="expandSet.has(data.id)">
-
-        <td colspan="3">
-          <nz-card style="margin: 10px;">
-            <nz-steps nzDirection="vertical" nzSize="small">
-              <nz-step *ngFor="let step of data.WorkflowSteps ;"
-                       nzDescription="{{step.processPath + ' ' + step.description}}"
-                       nzTitle="{{step.name}}"></nz-step>
-
-            </nz-steps>
-
-          </nz-card>
+        <td>{{ data.CreateTime | date:'yyyy-MM-dd HH:mm:ss':'UTC' }}</td>
+        <td>
+          <button nz-button>View</button>
+          <nz-divider nzType="vertical"></nz-divider>
+          <button nz-button>Edit</button>
+          <nz-divider nzType="vertical"></nz-divider>
+          <button class="button-warning" nz-button>Delete</button>
         </td>
       </tr>
+      <tr [nzExpand]="expandSet.has(data.id)">
+        <td colspan="3">
+          <ng-container [ngTemplateOutletContext]="{ $implicit: data }"
+                        [ngTemplateOutlet]="dataTemplate"></ng-container>
+
+        </td>
+      </tr>
+
+      <ng-template #dataTemplate let-data>
+        <nz-card style="margin: 10px;">
+          <nz-steps nzDirection="vertical" nzSize="small">
+            <nz-step *ngFor="let step of data.WorkflowSteps ;"
+                     nzDescription="{{step.processPath + ' ' + step.description}}"
+                     nzTitle="{{step.name}}"></nz-step>
+          </nz-steps>
+        </nz-card>
+      </ng-template>
     </ng-container>
     </tbody>
+
   </nz-table>
 </div>
+
+
 

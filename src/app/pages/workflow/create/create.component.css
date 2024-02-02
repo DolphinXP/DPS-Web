@@ -1,6 +1,6 @@
 .container {
   overflow: auto;
-  max-height: 80vh;
+  max-height: 30vh;
 }
 
 .step-item {

@@ -1,56 +1,73 @@
-<div class="container">
+<form [formGroup]="workflowStepForm" nz-form>
+  <div>
 
-  <nz-card [nzExtra]="extraTemplate" nzSize="small" nzTitle="Create Workflow">
-    <form [formGroup]="workflowStepForm" nz-form>
+    <div>
       <nz-form-item>
-        <nz-form-label nzFor="workflowName">Workflow Name</nz-form-label>
+        <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="workflowName">Workflow Name</nz-form-label>
         <nz-form-control>
           <input #workflowNameInput formControlName="workflowName" id="workflowName" nz-input/>
         </nz-form-control>
       </nz-form-item>
-
-      <nz-form-item>
-        <nz-form-label nzFor="name" nzRequired>Name</nz-form-label>
-        <nz-form-control nzErrorTip="Please input name!">
-          <input #nameInput formControlName="name" id="name" nz-input/>
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label nzFor="processPath" nzRequired>Process path</nz-form-label>
-        <nz-form-control nzErrorTip="Please input process path!">
-          <input formControlName="processPath" id="processPath" nz-input/>
-        </nz-form-control>
-      </nz-form-item>
-      <nz-form-item>
-        <nz-form-label nzFor="description">Description</nz-form-label>
-        <nz-form-control>
-          <input formControlName="description" id="description" nz-input/>
-        </nz-form-control>
-      </nz-form-item>
-    </form>
-  </nz-card>
-  <ng-template #extraTemplate>
-    <div>
-      <!-- Add button -->
-      <button (click)="addWorkflowStep()" nz-button>{{ buttonText }}</button>
-      <!-- Delete button -->
-      <button (click)="removeWorkflowStep()" [disabled]="disableDelButton" nz-button>Del-</button>
-      <!-- Submit button -->
-      <button (click)="onSubmit()" nz-button nzType="primary">Submit</button>
-
     </div>
-  </ng-template>
-  <div class="add-gap"></div>
+  </div>
+  <nz-divider nzText="Workflow steps, drag and drop row to reorder"></nz-divider>
 
-  <nz-card nzSize="small" nzTitle="Preview">
-    <nz-steps (nzIndexChange)="onIndexChange($event)" [nzCurrent]="index" nzDirection="vertical"
-              nzSize="small">
+  <nz-form-item>
+    <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="name" nzRequired>Name</nz-form-label>
+    <nz-form-control nzErrorTip="Please input name!">
+      <input #nameInput formControlName="name" id="name" nz-input/>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="processPath" nzRequired>Process path</nz-form-label>
+    <nz-form-control nzErrorTip="Please input process path!">
+      <input formControlName="processPath" id="processPath" nz-input/>
+    </nz-form-control>
+  </nz-form-item>
+  <nz-form-item>
+    <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="description">Description</nz-form-label>
+    <nz-form-control>
+      <input formControlName="description" id="description" nz-input/>
+    </nz-form-control>
+  </nz-form-item>
+</form>
+<nz-form-item class="register-area" nz-row>
+  <div [nzSpan]="24" nz-col style="text-align: right;">
+    <nz-form-control>
+      <button (click)="updateMode=false; addWorkflowStep()" nz-button>Add+</button>
+      <button (click)="addWorkflowStep()" [disabled]="!updateMode" nz-button>Update</button>
+    </nz-form-control>
+  </div>
+</nz-form-item>
+<div class="container">
+  <nz-table #nzTable [nzData]="workflowSteps" [nzPageSize]="3"
+            nzBordered nzSize="small">
+    <thead>
+    <tr>
+      <th nzWidth="5%">No</th>
+      <th nzWidth="20%">Name</th>
+      <th nzWidth="30%">Process Path</th>
+      <th nzWidth="40%">Description</th>
+      <th nzWidth="5%"></th>
+    </tr>
+    </thead>
+    <tbody (cdkDropListDropped)="drop($event)" cdkDropList>
+    <tr (click)="rowClicked(i)" *ngFor="let steps of workflowSteps; let i = index" cdkDrag>
+      <td>{{ i + 1 }}</td>
+      <td>{{ steps.name }}</td>
+      <td>{{ steps.processPath }}</td>
+      <td>{{ steps.description }}</td>
 
-      <nz-step *ngFor="let step of workflowSteps;"
-               nzDescription="{{step.processPath + ' ' + step.description}}"
-               nzTitle="{{step.name}}"></nz-step>
-
-    </nz-steps>
-  </nz-card>
-
+      <td>
+        <button (nzOnConfirm)="deleteWorkflowStep(i)" nz-button nz-popconfirm nzPopconfirmTitle="Sure to delete?"
+                nzSize="small">X
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </nz-table>
+</div>
+<div *nzModalFooter>
+  <button (click)="destroyModal()" nz-button nzType="default">Cancel</button>
+  <button (click)="onSubmit()" nz-button nzType="primary">Ok</button>
 </div>

@@ -1,1 +1,22 @@
 /* You can add global styles to this file, and also import other style files */
+
+.command-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #eeeeee;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.command-panel > div:first-child {
+
+  font-weight: bold;
+}
+
+.button-warning {
+  background-color: #f0ad4e;
+  border-color: #eea236;
+  color: #fff;
+}
