@@ -1,8 +1,6 @@
 import {Routes} from '@angular/router';
-import {WorkflowListComponent1} from "./list/workflow-list-component1.component";
-import {WorkflowCreateComponent} from "./create/workflow-create.component";
+import {WorkflowListComponent} from "./workflow-list/workflow-list.component";
 
 export const WORKFLOW_ROUTES: Routes = [
-    {path: 'list', component: WorkflowListComponent1},
-    {path: 'create', component: WorkflowCreateComponent},
+    {path: 'list', component: WorkflowListComponent},
 ];

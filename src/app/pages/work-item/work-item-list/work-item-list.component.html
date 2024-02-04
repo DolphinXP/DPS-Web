@@ -10,17 +10,17 @@
             <th nzWidth="20%">Name</th>
             <th nzWidth="20%">Process path</th>
             <th nzWidth="20%">Description</th>
-            <th nzWidth="10%">Create time</th>
+            <th nzWidth="20%">Create time</th>
             <th>Action</th>
         </tr>
         </thead>
         <tbody>
         <tr *ngFor="let data of nzTable.data; let i=index">
             <td>{{ i + 1 }}</td>
-            <td>{{ data.name }}</td>
-            <td>{{ data.processPath }}</td>
-            <td>{{ data.description }}</td>
-            <td>{{ data.createTime | date:'yyyy-MM-dd HH:mm:ss':'UTC' }}</td>
+            <td>{{ data.Name }}</td>
+            <td>{{ data.ProcessPath }}</td>
+            <td>{{ data.Description }}</td>
+            <td>{{ data.CreateTime | date:'yyyy-MM-dd HH:mm:ss':'UTC' }}</td>
             <td>
                 <button (click)="editWorkItem(data.id)" nz-button nzSize="small">Edit</button>
                 <nz-divider nzType="vertical"></nz-divider>
@@ -45,19 +45,19 @@
             <nz-form-item>
                 <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="name" nzRequired>Name</nz-form-label>
                 <nz-form-control nzErrorTip="Please input name!">
-                    <input #nameInput formControlName="name" id="name" nz-input/>
+                    <input #nameInput formControlName="Name" id="name" nz-input/>
                 </nz-form-control>
             </nz-form-item>
             <nz-form-item>
-                <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="processPath" nzRequired>Process path</nz-form-label>
+                <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="ProcessPath" nzRequired>Process path</nz-form-label>
                 <nz-form-control nzErrorTip="Please input process path!">
-                    <input formControlName="processPath" id="processPath" nz-input/>
+                    <input formControlName="ProcessPath" id="ProcessPath" nz-input/>
                 </nz-form-control>
             </nz-form-item>
             <nz-form-item>
-                <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="description">Description</nz-form-label>
+                <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="Description">Description</nz-form-label>
                 <nz-form-control>
-                    <input formControlName="description" id="description" nz-input/>
+                    <input formControlName="Description" id="Description" nz-input/>
                 </nz-form-control>
             </nz-form-item>
         </form>

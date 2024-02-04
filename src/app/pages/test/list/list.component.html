@@ -1,11 +1,98 @@
 <ul>
-  <li *ngFor="let test of tests">
-    {{ test | json }}
-  </li>
+    <li *ngFor="let test of tests">
+        {{ test | json }}
+    </li>
 </ul>
 
 <iframe
-  frameborder="0"
-  height="400"
-  src="http://10.110.31.154:3000/d-solo/ee552e83-6760-461c-93c1-c0d61e51b257/new-dashboard?orgId=1&from=1706842935408&to=1706864535408&panelId=1"
-  width="800"></iframe>
+        frameborder="0"
+        height="400"
+        src="http://10.110.31.154:3000/d-solo/ee552e83-6760-461c-93c1-c0d61e51b257/new-dashboard?orgId=1&from=1706842935408&to=1706864535408&panelId=1"
+        width="800"></iframe>
+
+
+<div class="row">
+    <div class="col-sm-3">
+        <div class="card">
+
+            <nz-card>
+                <div class="card-header">Draggable Item</div>
+                <div class="card-block">
+                    <ul class="list-group">
+                        <li
+                                (dragEndEvent)="log($event)"
+                                (dragStartEvent)="log($event)"
+                                (dropEndEvent)="log($event)"
+                                *ngFor="let item of list1"
+                                [dragData]="{ item: item, parent: list1 }"
+                                [dragScope]="'default-css'"
+                                class="list-group-item over-flow-ellipsis"
+                                dDraggable
+                        >
+                            11
+                        </li>
+                    </ul>
+                </div>
+            </nz-card>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div
+                (dragEnterEvent)="log($event)"
+                (dragLeaveEvent)="log($event)"
+                (dragOverEvent)="log($event)"
+                (dropEvent)="onDrop($event, list2)"
+                [dropScope]="'default-css'"
+                class="card card-outline-primary mb-3"
+                dDroppable
+        >
+            <nz-card>
+
+                <div class="card-header">Drop Area With Sortable Function</div>
+                <div class="card-block">
+                    <ul class="list-group d-drop-el" dSortable>
+                        <li
+                                *ngFor="let item of list2"
+                                [dragData]="{ item: item, parent: list2 }"
+                                [dragHandleClass]="'drag-handle'"
+                                [dragScope]="'default-css'"
+                                class="list-group-item over-flow-ellipsis"
+                                dDraggable
+                        >
+                            22
+                        </li>
+                    </ul>
+                </div>
+            </nz-card>
+        </div>
+    </div>
+    <div class="col-sm-3">
+        <div
+                (dragEnterEvent)="log($event)"
+                (dragLeaveEvent)="log($event)"
+                (dragOverEvent)="log($event)"
+                (dropEvent)="onDrop($event, list3)"
+                [dropScope]="'default-css'"
+                class="card card-outline-primary mb-3"
+                dDroppable
+        >
+            <div class="card-header">Drop Area Without Sortable Function</div>
+            <div class="card-block">
+                <ul class="list-group drop-el">
+                    <li
+                            *ngFor="let item of list3"
+                            [dragData]="{ item: item, parent: list3 }"
+                            [dragHandleClass]="'drag-handle'"
+                            [dragScope]="'default-css'"
+                            class="list-group-item over-flow-ellipsis"
+                            dDraggable
+                    >
+                        <div>
+                            33
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

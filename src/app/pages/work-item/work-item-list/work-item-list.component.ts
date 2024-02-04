@@ -44,9 +44,9 @@ export class WorkItemListComponent implements OnInit {
 
     constructor(private workItemService: WorkItemService, private formBuilder: FormBuilder, private modalService: NzModalService) {
         this.createForm = this.formBuilder.group({
-            name: ['', Validators.required],
-            processPath: ['', Validators.required],
-            description: [''],
+            Name: ['', Validators.required],
+            ProcessPath: ['', Validators.required],
+            Description: [''],
         });
     }
 
@@ -79,16 +79,16 @@ export class WorkItemListComponent implements OnInit {
             return;
         }
         // Get the values from the form fields
-        const name = this.createForm.get('name')?.value;
-        const processPath = this.createForm.get('processPath')?.value;
-        const description = this.createForm.get('description')?.value;
+        const Name = this.createForm.get('Name')?.value;
+        const ProcessPath = this.createForm.get('ProcessPath')?.value;
+        const Description = this.createForm.get('Description')?.value;
 
         // Create a new object with the form field values
         const workItem = {
             id: null,
-            name: name,
-            processPath: processPath,
-            description: description
+            Name: Name,
+            ProcessPath: ProcessPath,
+            Description: Description
         };
 
         if (this.updateMode) {
@@ -117,23 +117,21 @@ export class WorkItemListComponent implements OnInit {
         this.currentWorkItem = this.workItems.find((w: { id: string; }) => w.id === id);
 
         this.createForm.patchValue({
-            name: this.currentWorkItem.name,
-            processPath: this.currentWorkItem.processPath,
-            description: this.currentWorkItem.description
+            Name: this.currentWorkItem.Name,
+            ProcessPath: this.currentWorkItem.ProcessPath,
+            Description: this.currentWorkItem.Description
         });
 
         this.isCreateModalVisible = true;
     }
 
     deleteWorkItem(id: string) {
-        const workItem = this.workItems.find((w: { id: string; }) => w.id === id);
-
-        this.workItemService.deleteWorkItem(workItem.id).subscribe({
+        this.workItemService.deleteWorkItem(id).subscribe({
             next: response => {
                 this.workItems = this.workItems.filter((workflow: any) => workflow.id !== id);
             }, error: err => {
                 // Handle error
-                console.error('Error deleting workflow:', err);
+                console.error('Error deleting work item:', err);
             }
         });
     }
