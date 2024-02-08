@@ -1,0 +1,115 @@
+<div class="command-panel">
+    <div>Workflow Template</div>
+    <button (click)="showCreateModal()" nz-button nzType="primary">Add+</button>
+</div>
+<div class="container">
+    <nz-table #nzTable [nzData]="workTemplates" nzBordered nzSize="small" nzTableLayout="fixed">
+        <thead>
+        <tr>
+            <th nzWidth="60px">No</th>
+            <th nzWidth="20%">Name</th>
+            <th nzWidth="40%">Steps</th>
+            <th nzWidth="20%">Create time</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let data of nzTable.data; let i=index">
+            <td>{{ i + 1 }}</td>
+            <td>{{ data.Name }}</td>
+            <td>
+                <nz-tag *ngFor="let workItem of data.WorkItems; let i = index;" [nzColor]="'gold'"
+                        nz-tooltip
+                        nzTooltipTitle="{{ workItem.Name }}: {{workItem.ProcessPath}} {{workItem.Description}}">{{ i + 1 }}
+                    : {{
+                        workItem.Name
+                    }}
+                </nz-tag>
+            </td>
+            <td>{{ data.CreateTime | date:'yyyy-MM-dd HH:mm:ss':'UTC' }}</td>
+            <td>
+                <button (click)="editWorkflow(data.id)" nz-button nzSize="small">Edit</button>
+                <nz-divider nzType="vertical"></nz-divider>
+                <button (nzOnConfirm)="deleteWorkflow(data.id)" nz-button nz-popconfirm
+                        nzPopconfirmTitle="Sure to delete?"
+                        nzSize="small">Del
+                </button>
+            </td>
+        </tr>
+
+        </tbody>
+
+    </nz-table>
+</div>
+
+
+<!-- Create Modal -->
+<nz-modal (nzOnCancel)="handleCancel()" [(nzVisible)]="isCreateModalVisible" nzTitle="Create Workflow">
+    <div *nzModalContent>
+
+        <form [formGroup]="createForm" nz-form>
+            <nz-form-item>
+                <nz-form-label [nzSm]="6" [nzXs]="24" nzFor="name" nzRequired>Name</nz-form-label>
+                <nz-form-control nzErrorTip="Please input name!">
+                    <input #nameInput formControlName="Name" id="name" nz-input/>
+                </nz-form-control>
+            </nz-form-item>
+        </form>
+        <div nz-row>
+            <div nz-col nzSpan="11">
+                <div (dropEvent)="onDrop($event, workItems)" [defaultDropPosition]="'after'"
+                     dDroppable>
+                    <nz-card nzSize="small" nzTitle="Source items">
+                        <ul class="list-group" dSortable>
+                            <li
+                                    *ngFor="let item of workItems"
+                                    [dragData]="{ item: item, parent: workItems }"
+                                    [dragHandleClass]="'drag-handle'"
+                                    class="list-group-item " dDraggable
+                                    nz-tooltip
+                                    nzTooltipTitle="{{ item.Name }}: {{item.ProcessPath}} {{item.Description}}"
+                            >
+                                <span class="ellipsis">{{ item.Name }}</span>
+
+                            </li>
+                        </ul>
+                    </nz-card>
+                </div>
+            </div>
+            <div nz-col nzSpan="1"></div>
+            <div nz-col nzSpan="12">
+                <div (dropEvent)="onDrop($event, workTemplateWorkItems)" [defaultDropPosition]="'after'"
+                     dDroppable>
+
+                    <nz-card nzSize="small" nzTitle="Work Items">
+                        <ul class="list-group" dSortable>
+                            <li
+                                    *ngFor="let item of workTemplateWorkItems"
+                                    [dragData]="{ item: item, parent: workTemplateWorkItems }"
+                                    [dragHandleClass]="'drag-handle'"
+                                    class="list-group-item "
+                                    dDraggable
+                                    nz-tooltip
+                                    nzTooltipTitle="{{ item.Name }}: {{item.ProcessPath}} {{item.Description}}"
+                            >
+                                <span class="ellipsis">{{ item.Name }}</span>
+
+                            </li>
+                        </ul>
+
+                    </nz-card>
+                </div>
+            </div>
+        </div>
+
+        <span>Drag an item from the left panel to the right panel to add a work item. Conversely, dragging an item from the right panel to the left panel will delete the work item.</span>
+        <br/>
+        <span *ngIf="updateMode" class="warning-message">{{ warningMessage }}</span>
+    </div>
+    <div *nzModalFooter>
+        <button (click)="handleCancel()" nz-button nzType="default">Cancel</button>
+        <button (click)="handleOk()" nz-button nzType="primary">Ok</button>
+    </div>
+</nz-modal>
+
+
