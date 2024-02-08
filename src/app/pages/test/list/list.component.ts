@@ -5,7 +5,7 @@ import {DragDropModule} from "ng-devui";
 import {NzCardModule} from "ng-zorro-antd/card";
 
 @Component({
-    selector: 'app-test-list',
+    selector: 'app-test-job-list',
     standalone: true,
     imports: [
         NgForOf,

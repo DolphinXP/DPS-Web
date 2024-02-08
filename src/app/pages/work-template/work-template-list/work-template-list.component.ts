@@ -18,7 +18,7 @@ import {NzToolTipModule} from "ng-zorro-antd/tooltip";
 import {NzTagModule} from "ng-zorro-antd/tag";
 
 @Component({
-    selector: 'app-work-template-list',
+    selector: 'app-work-template-job-list',
     templateUrl: './work-template-list.component.html',
     standalone: true,
     imports: [
@@ -53,7 +53,7 @@ export class WorkTemplateListComponent implements OnInit {
     updateMode: boolean = false;
     warningMessage = "* The modified workflow template only takes effect for tasks created afterwards.";
 
-    constructor(private workflowService: WorkTemplateService, private workItemService: WorkItemService, private formBuilder: FormBuilder, private modalService: NzModalService) {
+    constructor(private workTemplateService: WorkTemplateService, private workItemService: WorkItemService, private formBuilder: FormBuilder, private modalService: NzModalService) {
         this.createForm = this.formBuilder.group({
             Name: ['', Validators.required],
             WorkItems: [''],
@@ -70,7 +70,7 @@ export class WorkTemplateListComponent implements OnInit {
             console.log(data);
         });
 
-        this.workflowService.getWorkTemplates().subscribe(data => {
+        this.workTemplateService.getWorkTemplates().subscribe(data => {
             this.workTemplates = data.data;
             console.log(data);
         });
@@ -113,13 +113,13 @@ export class WorkTemplateListComponent implements OnInit {
         if (this.updateMode) {
             const id = this.currentWorkTemplate.id;
             workflow.id = this.currentWorkTemplate.id;
-            this.workflowService.updateWorkTemplate(id, workflow).subscribe(data => {
+            this.workTemplateService.updateWorkTemplate(id, workflow).subscribe(data => {
                 console.log(data);
                 this.isCreateModalVisible = false;
                 this.refreshList();
             });
         } else {
-            this.workflowService.createWorkTemplate(workflow).subscribe(data => {
+            this.workTemplateService.createWorkTemplate(workflow).subscribe(data => {
                 console.log(data);
                 this.isCreateModalVisible = false;
                 this.refreshList();
@@ -164,7 +164,7 @@ export class WorkTemplateListComponent implements OnInit {
     }
 
     deleteWorkflow(id: string) {
-        this.workflowService.deleteWorkTemplate(id).subscribe({
+        this.workTemplateService.deleteWorkTemplate(id).subscribe({
             next: response => {
                 this.workTemplates = this.workTemplates.filter((workflow: any) => workflow.id !== id);
             }, error: err => {

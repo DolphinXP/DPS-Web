@@ -1,0 +1,39 @@
+<div class="command-panel">
+    <div>Nomad Job list</div>
+    <div>
+        <button (click)="startJob()" nz-button nzType="primary">Start test job</button>
+        <nz-divider nzType="vertical"></nz-divider>
+        <button (click)="stopJob()" nz-button>Stop test job</button>
+        <nz-divider nzType="vertical"></nz-divider>
+        <button (click)="deleteJob()" nz-button>Delete test job</button>
+    </div>
+</div>
+
+<nz-table #basicTable [nzData]="jobs" nzBordered>
+    <thead>
+    <tr>
+        <th>No</th>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Type</th>
+        <th>Priority</th>
+        <th>Stop</th>
+        <th>Status</th>
+        <th>SubmitTime</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let job of jobs; let i=index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ job.ID }}</td>
+        <td>{{ job.Name }}</td>
+        <td>{{ job.Type }}</td>
+        <td>{{ job.Priority }}</td>
+        <td>{{ job.Stop }}</td>
+        <td>{{ job.Status }}</td>
+        <td>{{ job.SubmitTime }}</td>
+        <td>{{ job.Meta }}</td>
+    </tr>
+    </tbody>
+</nz-table>

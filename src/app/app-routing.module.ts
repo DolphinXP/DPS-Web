@@ -10,7 +10,7 @@ const routes: Routes = [
         path: 'work-template',
         loadChildren: () => import('./pages/work-template/work-template.routes').then(m => m.WORK_TEMPLATE_ROUTES)
     },
-    // {path: 'workExecution', loadChildren: () => import('./pages/workflow/workflow.routes').then(m => m.WORKFLOW_ROUTES)},
+    {path: 'workflow', loadChildren: () => import('./pages/workflow/workflow.routes').then(m => m.WORKFLOW_ROUTES)},
     {path: 'nomad', loadChildren: () => import('./pages/nomad/nomad.routes').then(m => m.NOMAD_ROUTES)},
 ];
 

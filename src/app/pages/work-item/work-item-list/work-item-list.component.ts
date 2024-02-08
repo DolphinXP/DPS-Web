@@ -13,7 +13,7 @@ import {NzGridModule} from "ng-zorro-antd/grid";
 import {NzInputModule} from "ng-zorro-antd/input";
 
 @Component({
-    selector: 'app-work-item-list',
+    selector: 'app-work-item-job-list',
     templateUrl: './work-item-list.component.html',
     standalone: true,
     imports: [
@@ -55,7 +55,7 @@ export class WorkItemListComponent implements OnInit {
     }
 
     refreshList() {
-        // Refresh the list
+        // Refresh the job-list
         this.workItemService.getWorkItems().subscribe(data => {
             this.workItems = data.data;
             console.log(data);
