@@ -1,14 +1,14 @@
 <template>
   <a-layout style="min-height: 100vh;">
-    <a-layout-sider class="custom-side" v-model:collapsed="collapsed" :trigger="null" collapsible>
-      <div class="logo"><a href="/">DPS Web</a></div>
+    <a-layout-sider v-model:collapsed="collapsed" :class="{'custom-side': !collapsed}" :trigger="null" collapsible>
+      <div class="logo"><a href="/">DPS</a></div>
 
       <a-menu v-model:openKeys="openKeys"
               v-model:selectedKeys="selectedKeys"
-              mode="inline"
+              :class="{'custom-side': !collapsed}"
               :items="items"
+              mode="inline"
               theme="dark"
-              style="min-width: 256px;"
               @click="handleClick">
 
       </a-menu>
@@ -32,61 +32,86 @@
 </template>
 
 <script lang="ts" setup>
-import {h, reactive, ref, type VueElement} from 'vue';
+import {h, ref, type VueElement} from 'vue';
 import {
-  PieChartOutlined,
   AliwangwangOutlined,
   ApartmentOutlined,
-  MenuUnfoldOutlined,
   MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  PieChartOutlined,
 } from '@ant-design/icons-vue';
-import TheWelcome from "@/components/TheWelcome.vue";
-import AboutView from "@/views/AboutView.vue";
 import type {ItemType, MenuProps} from "ant-design-vue";
+import router from "@/router";
 
 
-const selectedKeys = ref<string[]>(['1-1']);
-const openKeys = ref(['1']);
+const selectedKeys = ref<string[]>(); //ref<string[]>(['1-1']);
+const openKeys = ref(['2']);
 const collapsed = ref<boolean>(false);
 
 function getItem(
     key: string,
     label: VueElement | string,
     icon?: any,
-    children?: ItemType[] ,
-    type?: 'group' ,
-) : ItemType{
+    children?: ItemType[],
+    type?: 'group',
+): ItemType {
   return {
     key,
     icon,
     children,
     label,
     type,
-  };
+  } as ItemType;
 }
 
 const items = ref([
-  getItem('1', 'Dashboard', ()=>h(PieChartOutlined), [
-    getItem('1-1', 'Dashboard1' ),
-    getItem('1-2', 'Dashboard2' ),
+  getItem('1', 'Dashboard', () => h(PieChartOutlined), [
+    getItem('1-1', 'Dashboard1'),
+    getItem('1-2', 'Dashboard2'),
   ]),
-  getItem('2', 'Tasks', ()=>h(AliwangwangOutlined), [
-    getItem('2-1', 'Tasks1' ),
-    getItem('2-2', 'Tasks2' ),
+  getItem('2', 'Workflow', () => h(AliwangwangOutlined), [
+    getItem('2-1', 'Work template'),
+    getItem('2-2', 'Work items'),
+    getItem('2-3', 'Workflow'),
   ]),
-  getItem('3', 'Test', ()=>h(ApartmentOutlined), [
-    getItem('3-1', 'Test1' ),
-    getItem('3-2', 'Test2' ),
+  {type: 'divider'},
+  getItem('3', 'Test', () => h(ApartmentOutlined), [
+    getItem('3-1', 'Test1'),
+    getItem('3-2', 'Test2'),
   ]),
 ]);
 
 const handleClick: MenuProps['onClick'] = e => {
   console.log('click', e);
+  switch (e.key) {
+    case '1-1':
+      router.push('/dashboard1');
+      break;
+    case '1-2':
+      router.push('/dashboard2');
+      break;
+    case '2-1':
+      router.push('/work-template');
+      break;
+    case '2-2':
+      router.push('/work-items');
+      break;
+    case '2-3':
+      router.push('/workflow');
+      break;
+    case '3-1':
+      router.push('/test1');
+      break;
+    case '3-2':
+      router.push('/test2');
+      break;
+  }
+
 };
 </script>
 
 <style>
-.custom-side{
+.custom-side {
   min-width: 256px !important;
 }
 
