@@ -52,7 +52,7 @@ const columns = [
     title: 'Create Time',
     dataIndex: 'CreateTime',
     key: 'CreateTime',
-    customRender: (row: any) => moment(row).format('YYYY-MM-DD HH:mm:ss'),
+    customRender: (row: any) => moment(row.record.CreateTime).format('YYYY-MM-DD HH:mm:ss'),
   },
 ];
 
