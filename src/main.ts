@@ -1,7 +1,14 @@
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import './assets/main.css'
 
-import { AppModule } from './app/app.module';
+import { createApp } from 'vue'
+import App from './App.vue'
+import Antd from 'ant-design-vue'
+import router from './router'
+
+const app = createApp(App)
+
+app.use(router)
+app.use(Antd)
 
 
-platformBrowserDynamic().bootstrapModule(AppModule)
-  .catch(err => console.error(err));
+app.mount('#app')
