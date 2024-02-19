@@ -2,6 +2,7 @@ import {createRouter, createWebHistory} from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import WorkTemplate from '@/views/workflow/WorkTemplate.vue'
 import WorkItems from "@/views/workflow/WorkItems.vue";
+import Workflow from "@/views/workflow/Workflow.vue";
 import TestView1 from "@/views/test/TestView1.vue";
 
 const router = createRouter({
@@ -13,12 +14,9 @@ const router = createRouter({
             component: HomeView
         },
         {
-            path: '/about',
-            name: 'about',
-            // route level code-splitting
-            // this generates a separate chunk (About.[hash].js) for this route
-            // which is lazy-loaded when the route is visited.
-            component: () => import('../views/test/TestView1.vue')
+            path: '/test1',
+            name: 'test1',
+            component: TestView1
         },
         {
             path: '/work-template',
@@ -31,7 +29,7 @@ const router = createRouter({
         }, {
             path: '/workflow',
             name: 'workflow',
-            component: TestView1
+            component: Workflow
         },
     ]
 })

@@ -32,7 +32,6 @@
         <a-input v-model:value="formState.Description"/>
       </a-form-item>
 
-      <a-input v-model:value="formState.Id" style="visibility: hidden;"/>
     </a-form>
   </a-modal>
 </template>
@@ -50,11 +49,12 @@ interface FormState {
   Description: string;
 }
 
+let currentId: string;
 const dataSource = ref([]);
 const open = ref<boolean>(false);
 const modalTitle = ref<string>('Add');
 const formRef = ref();
-const formState: UnwrapRef<FormState> = reactive({
+let formState: UnwrapRef<FormState> = reactive({
   Id: '',
   Name: '',
   ProcessPath: '',
@@ -121,7 +121,7 @@ const handleAdd = () => {
 }
 const handleEdit = (record: any) => {
   modalTitle.value = 'Edit';
-  formState.Id = record.id;
+  formState.Id = currentId = record.id;
   formState.Name = record.Name;
   formState.ProcessPath = record.ProcessPath;
   formState.Description = record.Description;
@@ -149,7 +149,7 @@ const handleSubmit = (e: MouseEvent) => {
                 open.value = false;
               })
         } else {
-          axios.put('http://localhost:8080/api/v1/workItem/update/' + formState.Id, formState)
+          axios.put('http://localhost:8080/api/v1/workItem/update/' + currentId, formState)
               .then(response => {
                 console.log('response', response);
                 updateData();
