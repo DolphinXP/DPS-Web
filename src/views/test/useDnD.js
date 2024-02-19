@@ -1,13 +1,15 @@
 import {useVueFlow} from '@vue-flow/core'
 import {ref, watch} from 'vue'
+import {v4 as uuidv4} from 'uuid';
 
-let id = 0
+
+let currentItem = null;
 
 /**
  * @returns {string} - A unique id.
  */
 function getId() {
-    return `dndnode_${id++}`
+    return `nid_${uuidv4().substring(0, 6)}`
 }
 
 /**
@@ -25,6 +27,19 @@ const state = {
 
 export default function useDragAndDrop() {
     const {draggedType, isDragOver, isDragging} = state
+    const startNode = {
+        id: 'start',
+        label: 'Start',
+        type: 'input',
+        position: {x: 100, y: 100},
+    }
+
+    const endNode = {
+        id: 'end',
+        label: 'Finish',
+        type: 'output',
+        position: {x: 100, y: 600},
+    }
 
     let currentNode = null;
     let currentEdge = null;
@@ -41,7 +56,9 @@ export default function useDragAndDrop() {
         document.body.style.userSelect = dragging ? 'none' : ''
     })
 
-    function onDragStart(event, type) {
+    function onDragStart(item, event, type) {
+        currentItem = item;
+
         if (event.dataTransfer) {
             event.dataTransfer.setData('application/vueflow', type)
             event.dataTransfer.effectAllowed = 'move'
@@ -84,6 +101,32 @@ export default function useDragAndDrop() {
 
     onConnectEnd((event, edge) => {
         const edges = getEdges.value;
+
+        // Create an object to store the count of occurrences for each node
+        const sourceConnected = {};
+        const targetConnected = {};
+        // Iterate through the edges
+        edges.forEach(edge => {
+            // Increment the count for the sourceNode and targetNode
+            sourceConnected[edge.sourceNode.id] = (sourceConnected[edge.sourceNode.id] || 0) + 1;
+            targetConnected[edge.targetNode.id] = (targetConnected[edge.targetNode.id] || 0) + 1;
+        });
+
+        // Iterate through the object and log a message for each node that appears more than once
+        for (const nodeId in sourceConnected) {
+            if (sourceConnected[nodeId] > 1) {
+                alert('Incorrect connection, each node must go from input to output and can only be connected once.');
+                removeEdges([edges[edges.length - 1]]);
+            }
+        }
+        // Iterate through the object and log a message for each node that appears more than once
+        for (const nodeId in targetConnected) {
+            if (targetConnected[nodeId] > 1) {
+                alert('Incorrect connection, each node must go from input to output and can only be connected once.');
+                removeEdges([edges[edges.length - 1]]);
+            }
+        }
+
         edges.forEach((edge) => {
             edge.animated = true;
         });
@@ -136,20 +179,60 @@ export default function useDragAndDrop() {
 
     function showElements() {
         const elems = getElements.value;
-        const extractedData = elems.map(elem => {
+        let extractedData = elems.map(elem => {
             if ('sourceNode' in elem && 'targetNode' in elem) {
                 return {
-                    id: `${elem.sourceNode.id}-${elem.targetNode.id}`,
+                    id: `${elem.id}-${elem.id}`,
                     sourceNode: elem.sourceNode,
                     targetNode: elem.targetNode,
-                    elemType: 'edge'
+                    elemType: 'edge',
+                    data: '',
                 };
             } else {
-                return {id: elem.id, elemType: 'node'};
+                return {id: elem.id, elemType: 'node', data: elem.data};
             }
         });
+
+        // Filter out the edges
+        const edges = extractedData.filter(item => item.elemType === 'edge');
+
+        // Create a new array to hold the sorted nodes
+        let sortedNodes = [];
+
+        // Find the edge where the sourceNode is startNode
+        let currentEdge = edges.find(edge => edge.sourceNode.id === 'start');
+
+        // If not find sourceNode==startNode in whole edge list, make alert and return
+        if (!currentEdge) {
+            alert('No edge with sourceNode == startNode found');
+            return;
+        }
+
+        // Add the sourceNode and targetNode to the sorted nodes array
+        sortedNodes.push(currentEdge.sourceNode);
+        sortedNodes.push(currentEdge.targetNode);
+
         console.log(extractedData);
-        alert(extractedData);
+
+        // Iteratively find the edge where the sourceNode is the previous targetNode
+        while (currentEdge.targetNode.id !== 'end') {
+            currentEdge = edges.find(edge => edge.sourceNode.id === currentEdge.targetNode.id);
+
+            // If no edge found, make alert and return
+            if (!currentEdge) {
+                alert('No edge with sourceNode == previous targetNode found');
+                return;
+            }
+
+            // Add the targetNode to the sorted nodes array
+            sortedNodes.push(currentEdge.targetNode);
+        }
+
+        console.log(sortedNodes);
+    }
+
+    function initialize() {
+        addNodes([startNode, endNode]);
     }
 
     /**
@@ -169,7 +252,8 @@ export default function useDragAndDrop() {
             id: nodeId,
             type: draggedType.value,
             position,
-            label: `[${nodeId}]`,
+            label: `${nodeId}`, //`${currentItem.Name}`,
+            data: currentItem,
         }
 
         /**
@@ -192,6 +276,7 @@ export default function useDragAndDrop() {
     }
 
     return {
+        initialize,
         draggedType,
         isDragOver,
         isDragging,
@@ -201,6 +286,6 @@ export default function useDragAndDrop() {
         onDrop,
         deleteNode,
         deleteEdge,
-        showNodeInfo: showElements,
+        showElements,
     }
 }

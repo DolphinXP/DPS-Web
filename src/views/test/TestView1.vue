@@ -1,5 +1,5 @@
 <script setup>
-import {ref} from 'vue'
+import {onMounted, ref} from 'vue'
 import {useVueFlow, VueFlow} from '@vue-flow/core'
 import DropzoneBackground from './DropzoneBackground.vue'
 import Sidebar from './Sidebar.vue'
@@ -7,9 +7,12 @@ import useDragAndDrop from './useDnD'
 
 const {onConnect, addEdges} = useVueFlow()
 
-const {onDragOver, onDrop, onDragLeave, isDragging, deleteNode, deleteEdge} = useDragAndDrop()
+const {initialize, onDragOver, onDrop, onDragLeave, isDragging, deleteNode, deleteEdge} = useDragAndDrop()
 
 const nodes = ref([])
+onMounted(() => {
+  initialize()
+})
 
 onConnect(addEdges)
 </script>

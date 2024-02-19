@@ -1,22 +1,38 @@
 <script setup>
 import useDragAndDrop from './useDnD'
+import {onMounted, ref} from "vue";
+import axios from "axios";
 
-const {onDragStart, showNodeInfo} = useDragAndDrop()
+const {onDragStart, showElements} = useDragAndDrop()
+const workItems = ref([])
+
+onMounted(() => {
+  axios.get('http://localhost:8080/api/v1/workItem/all').then(
+      response => {
+        workItems.value = response.data.data;
+        console.log(response.data.data);
+      }
+  ).catch(error => console.log(error))
+});
+
 </script>
 
 <template>
   <aside>
-    <a-button type="primary" @click="showNodeInfo">Add</a-button>
+    <a-button type="primary" @click="showElements">Add</a-button>
 
     <div class="description">You can drag these nodes to the pane.</div>
 
     <div class="nodes">
-      <div :draggable="true" class="vue-flow__node-input" @dragstart="onDragStart($event, 'default')">Input Node</div>
-
-      <div :draggable="true" class="vue-flow__node-default" @dragstart="onDragStart($event, 'default')">Default Node
+      <div v-for="(item, index) in workItems" :key="index" :draggable="true" class="vue-flow__node-default"
+           @dragstart="onDragStart(item, $event, 'default')">
+        {{ item.Name }}
       </div>
 
-      <div :draggable="true" class="vue-flow__node-output" @dragstart="onDragStart($event, 'default')">Output Node</div>
+      <!--      <div :draggable="true" class="vue-flow__node-input" @dragstart="onDragStart($event, 'default')">Input Node</div>-->
+      <!--      <div :draggable="true" class="vue-flow__node-default" @dragstart="onDragStart($event, 'default')">Default Node-->
+      <!--      </div>-->
+      <!--      <div :draggable="true" class="vue-flow__node-output" @dragstart="onDragStart($event, 'default')">Output Node</div>-->
     </div>
   </aside>
 </template>
