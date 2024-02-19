@@ -1,9 +1,11 @@
-<script setup>
+<script lang="ts" setup>
 import useDragAndDrop from './useDnD'
 import {onMounted, ref} from "vue";
 import axios from "axios";
 
-const {onDragStart, showElements} = useDragAndDrop()
+const templName = ref('')
+const shake = ref(false)
+const {onDragStart, getOrderedNodes} = useDragAndDrop()
 const workItems = ref([])
 
 onMounted(() => {
@@ -15,29 +17,60 @@ onMounted(() => {
   ).catch(error => console.log(error))
 });
 
+function saveWorkItems() {
+  if (!templName.value.trim()) {
+    shake.value = true;
+    // Set shake.value to false after 1 second (1000 milliseconds)
+    setTimeout(() => {
+      shake.value = false;
+    }, 500);
+    return
+  }
+
+  const nodes = getOrderedNodes();
+  if (nodes) {
+    const workItems = nodes
+        .filter(node => node.data !== undefined && Object.keys(node.data).length !== 0)
+        .map(node => node.data);
+
+    const workflow = {
+      id: null,
+      Name: templName.value,
+      WorkItems: workItems
+    };
+    axios.post('http://localhost:8080/api/v1/workTemplate/create', workflow)
+        .then(response => {
+          console.log('response', response);
+        })
+    console.log(workflow);
+  }
+}
+
 </script>
 
 <template>
   <aside>
-    <a-button type="primary" @click="showElements">Add</a-button>
-
-    <div class="description">You can drag these nodes to the pane.</div>
+    <label>Template name:</label>
+    <a-input v-model:value="templName" :class="{'shake': shake}"></a-input>
+    <span v-if="!templName.trim()" style="color: yellow;">* Please input template name</span>
+    <a-divider></a-divider>
+    <a-button type="primary" @click="saveWorkItems">Save</a-button>
+    <div class="description">Drag these nodes to the pane and connect them using the input and output points.</div>
 
     <div class="nodes">
       <div v-for="(item, index) in workItems" :key="index" :draggable="true" class="vue-flow__node-default"
            @dragstart="onDragStart(item, $event, 'default')">
         {{ item.Name }}
       </div>
-
-      <!--      <div :draggable="true" class="vue-flow__node-input" @dragstart="onDragStart($event, 'default')">Input Node</div>-->
-      <!--      <div :draggable="true" class="vue-flow__node-default" @dragstart="onDragStart($event, 'default')">Default Node-->
-      <!--      </div>-->
-      <!--      <div :draggable="true" class="vue-flow__node-output" @dragstart="onDragStart($event, 'default')">Output Node</div>-->
     </div>
   </aside>
 </template>
 
 <style scoped>
+.ant-divider {
+  border-top-color: lightblue;
+  margin: 10px 0;
+}
 
 aside {
   color: #fff;
@@ -59,7 +92,46 @@ aside .nodes > * {
 }
 
 aside .description {
-  margin-bottom: 10px;
+  margin: 10px 0;
 }
 
+@keyframes shake {
+  0% {
+    transform: translate(1px, 1px) rotate(0deg);
+  }
+  10% {
+    transform: translate(-1px, -2px) rotate(-1deg);
+  }
+  20% {
+    transform: translate(-3px, 0px) rotate(1deg);
+  }
+  30% {
+    transform: translate(3px, 2px) rotate(0deg);
+  }
+  40% {
+    transform: translate(1px, -1px) rotate(1deg);
+  }
+  50% {
+    transform: translate(-1px, 2px) rotate(-1deg);
+  }
+  60% {
+    transform: translate(-3px, 1px) rotate(0deg);
+  }
+  70% {
+    transform: translate(3px, 1px) rotate(-1deg);
+  }
+  80% {
+    transform: translate(-1px, -1px) rotate(1deg);
+  }
+  90% {
+    transform: translate(1px, 2px) rotate(0deg);
+  }
+  100% {
+    transform: translate(1px, 1px) rotate(0deg);
+  }
+}
+
+.shake {
+  animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
+}
 </style>

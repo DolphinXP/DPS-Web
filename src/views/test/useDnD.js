@@ -47,7 +47,7 @@ export default function useDragAndDrop() {
     const {
         onNodesInitialized, screenToFlowCoordinate,
         onConnectEnd, onPaneClick,
-        addNodes, updateNode, onNodeClick,
+        addNodes, updateNode, onNodeClick, getNodes,
         removeNodes, removeEdges, getEdges, onEdgeClick,
         getElements
     } = useVueFlow()
@@ -135,11 +135,12 @@ export default function useDragAndDrop() {
 
     function showContextMenu(menu, event) {
         const contextMenu = document.getElementById(menu);
-        contextMenu.style.top = `${event.event.clientY - 10}px`;
+        contextMenu.style.top = `${event.event.clientY + 10}px`;
         contextMenu.style.left = `${event.event.clientX + 10}px`;
         contextMenu.style.display = 'block';
         contextMenu.style.visibility = 'visible';
         console.log(event);
+
     }
 
     function hideContextMenu(menu) {
@@ -153,6 +154,9 @@ export default function useDragAndDrop() {
     });
 
     onNodeClick((event, node) => {
+        if (event.node.id === 'start' || event.node.id === 'end') {
+            return;
+        }
         showContextMenu('nodeMenu', event);
         currentNode = event.node;
     })
@@ -177,7 +181,7 @@ export default function useDragAndDrop() {
         hideContextMenu('edgeMenu');
     }
 
-    function showElements() {
+    function getOrderedNodes() {
         const elems = getElements.value;
         let extractedData = elems.map(elem => {
             if ('sourceNode' in elem && 'targetNode' in elem) {
@@ -204,15 +208,13 @@ export default function useDragAndDrop() {
 
         // If not find sourceNode==startNode in whole edge list, make alert and return
         if (!currentEdge) {
-            alert('No edge with sourceNode == startNode found');
-            return;
+            alert('No edge is connected with the start node.');
+            return null;
         }
 
         // Add the sourceNode and targetNode to the sorted nodes array
         sortedNodes.push(currentEdge.sourceNode);
         sortedNodes.push(currentEdge.targetNode);
-
-        console.log(extractedData);
 
         // Iteratively find the edge where the sourceNode is the previous targetNode
         while (currentEdge.targetNode.id !== 'end') {
@@ -220,8 +222,9 @@ export default function useDragAndDrop() {
 
             // If no edge found, make alert and return
             if (!currentEdge) {
-                alert('No edge with sourceNode == previous targetNode found');
-                return;
+                alert('Found a node that is not correctly connected, a node must be start from input and end at' +
+                    ' output, and can only be connected once.');
+                return null;
             }
 
             // Add the targetNode to the sorted nodes array
@@ -229,6 +232,7 @@ export default function useDragAndDrop() {
         }
 
         console.log(sortedNodes);
+        return sortedNodes;
     }
 
     function initialize() {
@@ -252,7 +256,7 @@ export default function useDragAndDrop() {
             id: nodeId,
             type: draggedType.value,
             position,
-            label: `${nodeId}`, //`${currentItem.Name}`,
+            label: `${currentItem.Name}`,
             data: currentItem,
         }
 
@@ -275,6 +279,7 @@ export default function useDragAndDrop() {
         addNodes(newNode)
     }
 
+
     return {
         initialize,
         draggedType,
@@ -286,6 +291,6 @@ export default function useDragAndDrop() {
         onDrop,
         deleteNode,
         deleteEdge,
-        showElements,
+        getOrderedNodes,
     }
 }
