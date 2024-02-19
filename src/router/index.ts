@@ -4,6 +4,7 @@ import WorkTemplate from '@/views/workflow/WorkTemplate.vue'
 import WorkItems from "@/views/workflow/WorkItems.vue";
 import Workflow from "@/views/workflow/Workflow.vue";
 import TestView1 from "@/views/test/TestView1.vue";
+import CreateWorkflowTemplate from "@/views/workflow/CreateWorkflowTemplate.vue";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -22,7 +23,13 @@ const router = createRouter({
             path: '/work-template',
             name: 'work-template',
             component: WorkTemplate
-        }, {
+        },
+        {
+            path: '/create-workflow-template',
+            name: 'create-workflow-template',
+            component: CreateWorkflowTemplate,
+        },
+        {
             path: '/work-items',
             name: 'work-items',
             component: WorkItems

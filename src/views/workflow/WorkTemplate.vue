@@ -2,21 +2,18 @@
   <a-button class="pull-right" @click="handleAdd">Add</a-button>
   <a-table :columns="columns" :dataSource="dataSource"/>
 
-  <a-modal v-model:open="open" title="Basic Modal" @ok="handleOk">
-    <p>Some contents...</p>
-    <p>Some contents...</p>
-    <p>Some contents...</p>
-  </a-modal>
+
 </template>
 
 <script lang="ts" setup>
 import {onMounted, ref} from "vue";
 import axios from "axios";
 import moment from "moment";
+import {useRouter} from "vue-router";
 
 const dataSource = ref([]);
 
-const open = ref<boolean>(false);
+const router = useRouter();
 
 onMounted(() => {
   updateData();
@@ -57,13 +54,11 @@ const columns = [
 ];
 
 const handleAdd = () => {
-  open.value = true;
+  console.log('add');
+  router.push({name: 'create-workflow-template'});
 }
 
-const handleOk = (e: MouseEvent) => {
-  console.log("ok");
-  open.value = false;
-}
+
 </script>
 
 <style scoped>

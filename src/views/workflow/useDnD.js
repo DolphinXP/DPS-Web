@@ -31,14 +31,14 @@ export default function useDragAndDrop() {
         id: 'start',
         label: 'Start',
         type: 'input',
-        position: {x: 100, y: 100},
+        position: {x: 500, y: 100},
     }
 
     const endNode = {
         id: 'end',
         label: 'Finish',
         type: 'output',
-        position: {x: 100, y: 600},
+        position: {x: 500, y: 600},
     }
 
     let currentNode = null;

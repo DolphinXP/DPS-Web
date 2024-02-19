@@ -2,7 +2,9 @@
 import useDragAndDrop from './useDnD'
 import {onMounted, ref} from "vue";
 import axios from "axios";
+import {useRouter} from "vue-router";
 
+const router = useRouter();
 const templName = ref('')
 const shake = ref(false)
 const {onDragStart, getOrderedNodes} = useDragAndDrop()
@@ -41,8 +43,8 @@ function saveWorkItems() {
     axios.post('http://localhost:8080/api/v1/workTemplate/create', workflow)
         .then(response => {
           console.log('response', response);
+          router.push({name: 'work-template'});
         })
-    console.log(workflow);
   }
 }
 
