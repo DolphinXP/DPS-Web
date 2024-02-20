@@ -2,17 +2,41 @@
 import {onMounted, ref} from 'vue'
 import {useVueFlow, VueFlow} from '@vue-flow/core'
 import DropzoneBackground from './DropzoneBackground.vue'
-import Sidebar from './Sidebar.vue'
-import useDragAndDrop from './useDnD'
-
-const {onConnect, addEdges} = useVueFlow()
-
-const {initialize, onDragOver, onDrop, onDragLeave, isDragging, deleteNode, deleteEdge} = useDragAndDrop()
+import Sidebar from './WorkTemplateSidebar.vue'
+import useDragAndDrop from './WorkTemplateDnD'
+import router from "@/router";
+import axios from "axios";
 
 const nodes = ref([])
+const edges = ref([])
+const {onConnect, addEdges} = useVueFlow()
+const {initialize, onDragOver, onDrop, onDragLeave, isDragging, deleteNode, deleteEdge} = useDragAndDrop()
 
-onMounted(() => {
-  initialize()
+let templId = ref('')
+let templName = ref('')
+let actionName = ref('')
+
+onMounted(async () => {
+  const id = router.currentRoute.value.query.id;
+  if (id) {
+    axios.get(`http://localhost:8080/api/v1/workTemplate/${id}`)
+        .then(response => {
+          templId.value = id;
+          templName.value = response.data.data.Name;
+          actionName.value = 'Update';
+
+          const graph = JSON.parse(response.data.data.VueFlowGraph);
+          edges.value = graph.filter(item => item.source && item.target);
+          nodes.value = graph.filter(item => !edges.value.includes(item));
+          initialize(nodes.value);
+        })
+        .catch(error => {
+          console.error(error);
+        });
+  } else {
+    actionName.value = 'Create';
+    initialize(null);
+  }
 })
 
 onConnect(addEdges)
@@ -22,10 +46,10 @@ onConnect(addEdges)
 <template>
   <a-breadcrumb>
     <a-breadcrumb-item><a href="/work-template">Workflow template</a></a-breadcrumb-item>
-    <a-breadcrumb-item>Create workflow template</a-breadcrumb-item>
+    <a-breadcrumb-item>{{ actionName }} workflow template</a-breadcrumb-item>
   </a-breadcrumb>
   <div class="dndflow" @drop="onDrop">
-    <VueFlow :nodes="nodes" @dragleave="onDragLeave" @dragover="onDragOver">
+    <VueFlow :edges="edges" :nodes="nodes" @dragleave="onDragLeave" @dragover="onDragOver">
       <DropzoneBackground
           :style="{
           backgroundColor: isDragging ? 'rgba(0, 0, 0, 0.1)' : 'transparent',
@@ -36,7 +60,7 @@ onConnect(addEdges)
       </DropzoneBackground>
     </VueFlow>
 
-    <Sidebar/>
+    <Sidebar :templId="templId" :templName="templName"/>
     <div id="nodeMenu" class="menu">
       <a-button size="small" @click="deleteNode">delete node</a-button>
     </div>

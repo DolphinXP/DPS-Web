@@ -1,6 +1,19 @@
 <template>
   <a-button class="pull-right" @click="handleAdd">Add</a-button>
-  <a-table :columns="columns" :dataSource="dataSource"/>
+  <a-table #bodyCell="{ column, text, record }" :columns="columns" :dataSource="dataSource">
+    <template v-if="column.dataIndex === 'Operation'">
+      <a @click="handleEdit(record)">Edit</a>
+      <a-divider type="vertical"/>
+      <a-popconfirm
+          v-if="dataSource.length"
+          title="Sure to delete?"
+          @confirm="handleDel(record.id)"
+      >
+        <a>Delete</a>
+      </a-popconfirm>
+    </template>
+
+  </a-table>
 
 
 </template>
@@ -18,6 +31,26 @@ const router = useRouter();
 onMounted(() => {
   updateData();
 });
+
+const handleAdd = () => {
+  console.log('add');
+  router.push({name: 'work-template-create'});
+}
+const handleEdit = (record: any) => {
+  console.log('record', record.id);
+  router.push({
+    name: 'work-template-update',
+    query: {id: record.id}
+  });
+};
+const handleDel = (id: string) => {
+  console.log('id', id);
+  axios.delete('http://localhost:8080/api/v1/workTemplate/delete/' + id)
+      .then(response => {
+        console.log('response', response);
+        updateData();
+      })
+}
 
 const updateData = () => {
   axios.get('http://localhost:8080/api/v1/workTemplate/all').then(
@@ -43,7 +76,7 @@ const columns = [
     title: 'Steps',
     dataIndex: 'Steps',
     key: 'Steps',
-    customRender: (row: any) => row.record.WorkItems.length,
+    customRender: (row: any) => row.record.WorkItems?.length,
   },
   {
     title: 'Create Time',
@@ -51,12 +84,11 @@ const columns = [
     key: 'CreateTime',
     customRender: (row: any) => moment(row.record.CreateTime).format('YYYY-MM-DD HH:mm:ss'),
   },
+  {
+    title: 'Operation',
+    dataIndex: 'Operation',
+  }
 ];
-
-const handleAdd = () => {
-  console.log('add');
-  router.push({name: 'create-workflow-template'});
-}
 
 
 </script>

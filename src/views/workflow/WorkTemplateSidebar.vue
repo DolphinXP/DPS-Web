@@ -1,6 +1,6 @@
 <script lang="ts" setup>
-import useDragAndDrop from './useDnD'
-import {onMounted, ref} from "vue";
+import useDragAndDrop from './WorkTemplateDnD'
+import {onMounted, ref, watch} from "vue";
 import axios from "axios";
 import {useRouter} from "vue-router";
 
@@ -10,13 +10,25 @@ const shake = ref(false)
 const {onDragStart, getOrderedNodes} = useDragAndDrop()
 const workItems = ref([])
 
+
+const props = withDefaults(defineProps<{
+  templId: string,
+  templName: string,
+}>(), {
+  templId: '',
+  templName: '',
+})
+
 onMounted(() => {
   axios.get('http://localhost:8080/api/v1/workItem/all').then(
       response => {
         workItems.value = response.data.data;
-        console.log(response.data.data);
       }
   ).catch(error => console.log(error))
+});
+
+watch(() => props.templName, (newVal) => {
+  templName.value = newVal;
 });
 
 function saveWorkItems() {
@@ -35,16 +47,33 @@ function saveWorkItems() {
         .filter(node => node.data !== undefined && Object.keys(node.data).length !== 0)
         .map(node => node.data);
 
-    const workflow = {
-      id: null,
-      Name: templName.value,
-      WorkItems: workItems
-    };
-    axios.post('http://localhost:8080/api/v1/workTemplate/create', workflow)
-        .then(response => {
-          console.log('response', response);
-          router.push({name: 'work-template'});
-        })
+    let id = props.templId.trim();
+    if (id) {
+      const workflow = {
+        id: id,
+        Name: templName.value,
+        WorkItems: workItems,
+        VueFlowGraph: JSON.stringify(nodes),
+      };
+      console.log(workflow);
+      axios.put('http://localhost:8080/api/v1/workTemplate/update/' + id, workflow)
+          .then(response => {
+            console.log('response', response);
+            router.push({name: 'work-template'});
+          })
+    } else {
+      const workflow = {
+        id: null,
+        Name: templName.value,
+        WorkItems: workItems,
+        VueFlowGraph: JSON.stringify(nodes),
+      };
+      axios.post('http://localhost:8080/api/v1/workTemplate/create', workflow)
+          .then(response => {
+            console.log('response', response);
+            router.push({name: 'work-template'});
+          })
+    }
   }
 }
 
@@ -56,7 +85,7 @@ function saveWorkItems() {
     <a-input v-model:value="templName" :class="{'shake': shake}"></a-input>
     <span v-if="!templName.trim()" style="color: yellow;">* Please input template name</span>
     <a-divider></a-divider>
-    <a-button type="primary" @click="saveWorkItems">Save</a-button>
+    <a-button @click="saveWorkItems">Save</a-button>
     <div class="description">Drag these nodes to the pane and connect them using the input and output points.</div>
 
     <div class="nodes">

@@ -1,7 +1,8 @@
 import {useVueFlow} from '@vue-flow/core'
-import {ref, watch} from 'vue'
+import {h, ref, watch} from 'vue'
 import {v4 as uuidv4} from 'uuid';
-
+import {notification} from "ant-design-vue";
+import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
 
 let currentItem = null;
 
@@ -55,6 +56,14 @@ export default function useDragAndDrop() {
     watch(isDragging, (dragging) => {
         document.body.style.userSelect = dragging ? 'none' : ''
     })
+
+    function initialize(nodes) {
+        if (!nodes) {
+            addNodes([startNode, endNode]);
+        } else {
+            addNodes(nodes);
+        }
+    }
 
     function onDragStart(item, event, type) {
         currentItem = item;
@@ -115,14 +124,14 @@ export default function useDragAndDrop() {
         // Iterate through the object and log a message for each node that appears more than once
         for (const nodeId in sourceConnected) {
             if (sourceConnected[nodeId] > 1) {
-                alert('Incorrect connection, each node must go from input to output and can only be connected once.');
+                notifyMessage('Incorrect connection, each node must go from input to output and can only be connected once.');
                 removeEdges([edges[edges.length - 1]]);
             }
         }
         // Iterate through the object and log a message for each node that appears more than once
         for (const nodeId in targetConnected) {
             if (targetConnected[nodeId] > 1) {
-                alert('Incorrect connection, each node must go from input to output and can only be connected once.');
+                notifyMessage('Incorrect connection, each node must go from input to output and can only be connected once.');
                 removeEdges([edges[edges.length - 1]]);
             }
         }
@@ -181,19 +190,40 @@ export default function useDragAndDrop() {
         hideContextMenu('edgeMenu');
     }
 
+    function notifyMessage(description) {
+        notification.open({
+            message: `Warning`,
+            description: description,
+            placement: 'top',
+            icon: () => h(ExclamationCircleOutlined, {style: 'color: red'}),
+        });
+    }
+
     function getOrderedNodes() {
         const elems = getElements.value;
         let extractedData = elems.map(elem => {
             if ('sourceNode' in elem && 'targetNode' in elem) {
                 return {
                     id: `${elem.id}-${elem.id}`,
+                    label: elem.label,
                     sourceNode: elem.sourceNode,
                     targetNode: elem.targetNode,
+                    source: elem.sourceNode.id,
+                    target: elem.targetNode.id,
                     elemType: 'edge',
+                    position: elem.position,
+                    animated: elem.animated,
                     data: '',
                 };
             } else {
-                return {id: elem.id, elemType: 'node', data: elem.data};
+                return {
+                    id: elem.id,
+                    type: elem.type,
+                    label: elem.label,
+                    elemType: 'node',
+                    position: elem.position,
+                    data: elem.data
+                };
             }
         });
 
@@ -208,7 +238,7 @@ export default function useDragAndDrop() {
 
         // If not find sourceNode==startNode in whole edge list, make alert and return
         if (!currentEdge) {
-            alert('No edge is connected with the start node.');
+            notifyMessage('No edge is connected with the start node.');
             return null;
         }
 
@@ -222,7 +252,7 @@ export default function useDragAndDrop() {
 
             // If no edge found, make alert and return
             if (!currentEdge) {
-                alert('Found a node that is not correctly connected, a node must be start from input and end at' +
+                notifyMessage('Found a node that is not correctly connected, a node must be start from input and end at' +
                     ' output, and can only be connected once.');
                 return null;
             }
@@ -231,13 +261,11 @@ export default function useDragAndDrop() {
             sortedNodes.push(currentEdge.targetNode);
         }
 
+        sortedNodes.push(...edges);
         console.log(sortedNodes);
         return sortedNodes;
     }
 
-    function initialize() {
-        addNodes([startNode, endNode]);
-    }
 
     /**
      * Handles the drop event.

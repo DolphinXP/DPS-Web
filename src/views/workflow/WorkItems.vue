@@ -1,17 +1,16 @@
 <template>
   <a-button class="pull-right" @click="handleAdd">Add</a-button>
-  <a-table :columns="columns" :dataSource="dataSource">
-    <template #bodyCell="{ column, text, record }">
-      <template v-if="column.dataIndex==='Operation'">
-        <a @click="handleEdit(record)">Edit</a>
-        <a-divider type="vertical"/>
-        <a-popconfirm
-            title="Sure to delete?"
-            @confirm="handleDel(record.id)"
-        >
-        </a-popconfirm>
+  <a-table #bodyCell="{ column, text, record }" :columns="columns" :dataSource="dataSource">
+    <template v-if="column.dataIndex === 'Operation'">
+      <a @click="handleEdit(record)">Edit</a>
+      <a-divider type="vertical"/>
+      <a-popconfirm
+          v-if="dataSource.length"
+          title="Sure to delete?"
+          @confirm="handleDel(record.id)"
+      >
         <a>Delete</a>
-      </template>
+      </a-popconfirm>
     </template>
   </a-table>
 
@@ -115,9 +114,12 @@ const columns = [
 
 const handleAdd = () => {
   modalTitle.value = 'Add';
+  formState.Id = currentId = '';
+  formState.Name = '';
+  formState.ProcessPath = '';
+  formState.Description = '';
   open.value = true;
 
-  formRef.value?.resetFields();
 }
 const handleEdit = (record: any) => {
   modalTitle.value = 'Edit';
