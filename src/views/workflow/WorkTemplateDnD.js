@@ -1,10 +1,11 @@
 import {useVueFlow} from '@vue-flow/core'
 import {h, ref, watch} from 'vue'
 import {v4 as uuidv4} from 'uuid';
-import {notification} from "ant-design-vue";
+import {Modal, notification} from "ant-design-vue";
 import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
 
 let currentItem = null;
+let isDoubleClickEventFired = false;
 
 /**
  * @returns {string} - A unique id.
@@ -42,14 +43,11 @@ export default function useDragAndDrop() {
         position: {x: 500, y: 600},
     }
 
-    let currentNode = null;
-    let currentEdge = null;
-
     const {
         onNodesInitialized, screenToFlowCoordinate,
-        onConnectEnd, onPaneClick,
-        addNodes, updateNode, onNodeClick, getNodes,
-        removeNodes, removeEdges, getEdges, onEdgeClick,
+        onConnectEnd,
+        addNodes, updateNode, onNodeDoubleClick, getNodes,
+        removeNodes, removeEdges, getEdges, onEdgeDoubleClick,
         getElements
     } = useVueFlow()
 
@@ -142,53 +140,52 @@ export default function useDragAndDrop() {
 
     })
 
-    function showContextMenu(menu, event) {
-        const contextMenu = document.getElementById(menu);
-        contextMenu.style.top = `${event.event.clientY + 10}px`;
-        contextMenu.style.left = `${event.event.clientX + 10}px`;
-        contextMenu.style.display = 'block';
-        contextMenu.style.visibility = 'visible';
-        console.log(event);
 
-    }
-
-    function hideContextMenu(menu) {
-        const contextMenu = document.getElementById(menu);
-        contextMenu.style.visibility = 'hidden';
-    }
-
-    onPaneClick((event) => {
-        hideContextMenu('nodeMenu');
-        hideContextMenu('edgeMenu');
-    });
-
-    onNodeClick((event, node) => {
+    onNodeDoubleClick((event, node) => {
         if (event.node.id === 'start' || event.node.id === 'end') {
             return;
         }
-        showContextMenu('nodeMenu', event);
-        currentNode = event.node;
+
+        if (isDoubleClickEventFired) {
+            return;
+        }
+        isDoubleClickEventFired = true;
+
+        Modal.confirm({
+            title: 'Delete Node',
+            content: 'Are you sure to delete this node?',
+            icon: h(ExclamationCircleOutlined, {style: 'color: red'}),
+            onOk() {
+                removeNodes([event.node]);
+            }
+        });
+
+        setTimeout(() => {
+            isDoubleClickEventFired = false;
+        }, 300); // delay in ms
+
     })
 
-    function deleteNode() {
-        if (currentNode) {
-            removeNodes([currentNode]);
+    onEdgeDoubleClick((event, edge) => {
+        if (isDoubleClickEventFired) {
+            return;
         }
+        isDoubleClickEventFired = true;
 
-        hideContextMenu('nodeMenu');
-    }
+        Modal.confirm({
+            title: 'Delete Edge',
+            content: 'Are you sure to delete this edge?',
+            icon: h(ExclamationCircleOutlined, {style: 'color: red'}),
+            onOk() {
+                removeEdges([event.edge]);
+            }
+        });
 
-    onEdgeClick((event, edge) => {
-        showContextMenu('edgeMenu', event);
-        currentEdge = event.edge;
+        setTimeout(() => {
+            isDoubleClickEventFired = false;
+        }, 300); // delay in ms
+
     })
-
-    function deleteEdge() {
-        if (currentEdge) {
-            removeEdges([currentEdge]);
-        }
-        hideContextMenu('edgeMenu');
-    }
 
     function notifyMessage(description) {
         notification.open({
@@ -317,8 +314,6 @@ export default function useDragAndDrop() {
         onDragLeave,
         onDragOver,
         onDrop,
-        deleteNode,
-        deleteEdge,
         getOrderedNodes,
     }
 }

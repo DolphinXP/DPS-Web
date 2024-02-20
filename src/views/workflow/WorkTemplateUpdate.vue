@@ -45,8 +45,8 @@ onConnect(addEdges)
 
 <template>
   <a-breadcrumb>
-    <a-breadcrumb-item><a href="/work-template">Workflow template</a></a-breadcrumb-item>
-    <a-breadcrumb-item>{{ actionName }} workflow template</a-breadcrumb-item>
+    <a-breadcrumb-item><a href="/WorkTemplate">Workflow template</a></a-breadcrumb-item>
+    <a-breadcrumb-item>{{ actionName }}</a-breadcrumb-item>
   </a-breadcrumb>
   <div class="dndflow" @drop="onDrop">
     <VueFlow :edges="edges" :nodes="nodes" @dragleave="onDragLeave" @dragover="onDragOver">
@@ -61,12 +61,6 @@ onConnect(addEdges)
     </VueFlow>
 
     <Sidebar :templId="templId" :templName="templName"/>
-    <div id="nodeMenu" class="menu">
-      <a-button size="small" @click="deleteNode">delete node</a-button>
-    </div>
-    <div id="edgeMenu" class="menu">
-      <a-button size="small" @click="deleteEdge">delete edge</a-button>
-    </div>
   </div>
 
 </template>

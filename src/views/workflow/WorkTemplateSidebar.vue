@@ -86,8 +86,10 @@ function saveWorkItems() {
     <span v-if="!templName.trim()" style="color: yellow;">* Please input template name</span>
     <a-divider></a-divider>
     <a-button @click="saveWorkItems">Save</a-button>
-    <div class="description">Drag these nodes to the pane and connect them using the input and output points.</div>
-
+    <ul class="description">
+      <li>Drag nodes to the pane and connect them using the input and output points.</li>
+      <li>Double click a node or an edge to delete it.</li>
+    </ul>
     <div class="nodes">
       <div v-for="(item, index) in workItems" :key="index" :draggable="true" class="vue-flow__node-default"
            @dragstart="onDragStart(item, $event, 'default')">
@@ -123,7 +125,7 @@ aside .nodes > * {
 }
 
 aside .description {
-  margin: 10px 0;
+  margin: 10px -10px;
 }
 
 @keyframes shake {
