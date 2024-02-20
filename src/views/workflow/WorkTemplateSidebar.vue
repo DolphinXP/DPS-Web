@@ -59,7 +59,7 @@ function saveWorkItems() {
       axios.put('http://localhost:8080/api/v1/workTemplate/update/' + id, workflow)
           .then(response => {
             console.log('response', response);
-            router.push({name: 'work-template'});
+            router.push({name: 'WorkTemplate'});
           })
     } else {
       const workflow = {
@@ -71,7 +71,7 @@ function saveWorkItems() {
       axios.post('http://localhost:8080/api/v1/workTemplate/create', workflow)
           .then(response => {
             console.log('response', response);
-            router.push({name: 'work-template'});
+            router.push({name: 'WorkTemplate'});
           })
     }
   }

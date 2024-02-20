@@ -91,13 +91,13 @@ const handleClick: MenuProps['onClick'] = e => {
       router.push('/dashboard2');
       break;
     case '2-1':
-      router.push('/work-template');
+      router.push('/WorkTemplate');
       break;
     case '2-2':
-      router.push('/work-items');
+      router.push('/WorkItems');
       break;
     case '2-3':
-      router.push('/workflow');
+      router.push('/Workflow');
       break;
     case '3-1':
       router.push('/test1');

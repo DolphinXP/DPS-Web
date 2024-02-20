@@ -34,12 +34,12 @@ onMounted(() => {
 
 const handleAdd = () => {
   console.log('add');
-  router.push({name: 'work-template-create'});
+  router.push({name: 'WorkTemplateCreate'});
 }
 const handleEdit = (record: any) => {
   console.log('record', record.id);
   router.push({
-    name: 'work-template-update',
+    name: 'WorkTemplateUpdate',
     query: {id: record.id}
   });
 };

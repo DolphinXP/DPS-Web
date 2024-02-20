@@ -20,27 +20,27 @@ const router = createRouter({
             component: TestView1
         },
         {
-            path: '/work-template',
-            name: 'work-template',
+            path: '/WorkTemplate',
+            name: 'WorkTemplate',
             component: WorkTemplate
         },
         {
-            path: '/work-template-create',
-            name: 'work-template-create',
+            path: '/WorkTemplateCreate',
+            name: 'WorkTemplateCreate',
             component: WorkTemplateUpdate,
         },
         {
-            path: '/work-template-update',
-            name: 'work-template-update',
+            path: '/WorkTemplateUpdate',
+            name: 'WorkTemplateUpdate',
             component: WorkTemplateUpdate,
         },
         {
-            path: '/work-items',
-            name: 'work-items',
+            path: '/WorkItems',
+            name: 'WorkItems',
             component: WorkItems
         }, {
-            path: '/workflow',
-            name: 'workflow',
+            path: '/Workflow',
+            name: 'Workflow',
             component: Workflow
         },
     ]
