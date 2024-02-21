@@ -7,6 +7,9 @@ import {ExclamationCircleOutlined} from "@ant-design/icons-vue";
 let currentItem = null;
 let isDoubleClickEventFired = false;
 
+let posOffset = {x: 0, y: 0};
+let newNode = {}
+
 /**
  * @returns {string} - A unique id.
  */
@@ -43,10 +46,20 @@ export default function useDragAndDrop() {
         position: {x: 500, y: 600},
     }
 
+    const testNode = {
+        id: 'test',
+        label: 'Test',
+        type: 'default',
+        position: {x: 500, y: 200},
+
+        style: {backgroundColor: 'rgba(16, 185, 129, 0.5)', width: '200px', height: '200px'},
+    }
+
+
     const {
-        onNodesInitialized, screenToFlowCoordinate,
-        onConnectEnd,
-        addNodes, updateNode, onNodeDoubleClick, getNodes,
+        onNodesInitialized, screenToFlowCoordinate, onNodesChange, onNodeDragStop,
+        onConnectEnd, getIntersectingNodes, isNodeIntersecting,
+        addNodes, updateNode, onNodeDoubleClick, getNodes, getViewport,
         removeNodes, removeEdges, getEdges, onEdgeDoubleClick,
         getElements
     } = useVueFlow()
@@ -57,14 +70,26 @@ export default function useDragAndDrop() {
 
     function initialize(nodes) {
         if (!nodes) {
-            addNodes([startNode, endNode]);
+            addNodes([startNode, testNode, endNode]);
         } else {
             addNodes(nodes);
         }
     }
 
+
+    onNodeDragStop(() => {
+        const intersectingNodes = getIntersectingNodes(newNode, true);
+        console.log(intersectingNodes)
+    })
+
     function onDragStart(item, event, type) {
         currentItem = item;
+
+        posOffset = {
+            x: event.offsetX,
+            y: event.offsetY,
+        }
+
 
         if (event.dataTransfer) {
             event.dataTransfer.setData('application/vueflow', type)
@@ -105,6 +130,52 @@ export default function useDragAndDrop() {
         document.removeEventListener('drop', onDragEnd)
 
     }
+
+
+    /**
+     * Handles the drop event.
+     *
+     * @param {DragEvent} event
+     */
+    function onDrop(event) {
+        console.log(event)
+        const position = screenToFlowCoordinate({
+            x: event.clientX - posOffset.x,
+            y: event.clientY - posOffset.y,
+        })
+
+        const nodeId = getId()
+
+        newNode = {
+            id: nodeId,
+            type: draggedType.value,
+            position,
+            label: `${currentItem.Name}`,
+            data: currentItem,
+        }
+        addNodes(newNode)
+
+        // Mr. Tom
+        setTimeout(() => {
+            const intersectingNodes = getIntersectingNodes(newNode, true);
+            intersectingNodes.forEach((parentNode) => {
+                if (parentNode.id === 'test') {
+                    updateNode(newNode.id, (me) => ({
+                        parentNode: parentNode.id,
+                        //extent: 'parent',
+                        expandParent: true,
+                        position: {
+                            x: (me.position.x - parentNode.position.x),
+                            y: (me.position.y - parentNode.position.y)
+                        },
+                        label: `${me.label}-${parentNode.label}`,
+                    }));
+                }
+            })
+        }, 300); // Delay in milliseconds
+
+    }
+
 
     onConnectEnd((event, edge) => {
         const edges = getEdges.value;
@@ -261,47 +332,6 @@ export default function useDragAndDrop() {
         sortedNodes.push(...edges);
         console.log(sortedNodes);
         return sortedNodes;
-    }
-
-
-    /**
-     * Handles the drop event.
-     *
-     * @param {DragEvent} event
-     */
-    function onDrop(event) {
-        const position = screenToFlowCoordinate({
-            x: event.clientX,
-            y: event.clientY,
-        })
-
-        const nodeId = getId()
-
-        const newNode = {
-            id: nodeId,
-            type: draggedType.value,
-            position,
-            label: `${currentItem.Name}`,
-            data: currentItem,
-        }
-
-        /**
-         * Align node position after drop, so it's centered to the mouse
-         *
-         * We can hook into events even in a callback, and we can remove the event listener after it's been called.
-         */
-        const {off} = onNodesInitialized(() => {
-            updateNode(nodeId, (node) => ({
-                position: {
-                    x: node.position.x - node.dimensions.width / 2,
-                    y: node.position.y - node.dimensions.height / 2
-                },
-            }))
-
-            off()
-        })
-
-        addNodes(newNode)
     }
 
 

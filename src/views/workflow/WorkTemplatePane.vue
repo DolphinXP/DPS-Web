@@ -6,6 +6,8 @@ import Sidebar from './WorkTemplateSidebar.vue'
 import useDragAndDrop from './WorkTemplateDnD'
 import router from "@/router";
 import axios from "axios";
+import {MiniMap} from "@vue-flow/minimap";
+import {Controls} from "@vue-flow/controls";
 
 const nodes = ref([])
 const edges = ref([])
@@ -49,7 +51,7 @@ onConnect(addEdges)
     <a-breadcrumb-item>{{ actionName }}</a-breadcrumb-item>
   </a-breadcrumb>
   <div class="dndflow" @drop="onDrop">
-    <VueFlow :edges="edges" :nodes="nodes" @dragleave="onDragLeave" @dragover="onDragOver">
+    <VueFlow :edges="edges" :nodes="nodes" elevate-edges-on-select @dragleave="onDragLeave" @dragover="onDragOver">
       <DropzoneBackground
           :style="{
           backgroundColor: isDragging ? 'rgba(0, 0, 0, 0.1)' : 'transparent',
@@ -58,6 +60,10 @@ onConnect(addEdges)
         }"
       >
       </DropzoneBackground>
+
+      <Controls/>
+      <MiniMap/>
+
     </VueFlow>
 
     <Sidebar :templId="templId" :templName="templName"/>
@@ -79,6 +85,7 @@ onConnect(addEdges)
   position: absolute;
   visibility: hidden;
 }
+
 
 .dndflow .vue-flow-wrapper {
   flex-grow: 1;
