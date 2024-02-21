@@ -77,9 +77,8 @@ export default function useDragAndDrop() {
     }
 
 
-    onNodeDragStop(() => {
-        const intersectingNodes = getIntersectingNodes(newNode, true);
-        console.log(intersectingNodes)
+    onNodesChange((nodes) => {
+
     })
 
     function onDragStart(item, event, type) {
@@ -172,6 +171,7 @@ export default function useDragAndDrop() {
                     }));
                 }
             })
+
         }, 300); // Delay in milliseconds
 
     }
@@ -207,6 +207,7 @@ export default function useDragAndDrop() {
 
         edges.forEach((edge) => {
             edge.animated = true;
+            edge.type = 'smoothstep';
         });
 
     })
@@ -269,69 +270,25 @@ export default function useDragAndDrop() {
 
     function getOrderedNodes() {
         const elems = getElements.value;
-        let extractedData = elems.map(elem => {
-            if ('sourceNode' in elem && 'targetNode' in elem) {
-                return {
-                    id: `${elem.id}-${elem.id}`,
-                    label: elem.label,
-                    sourceNode: elem.sourceNode,
-                    targetNode: elem.targetNode,
-                    source: elem.sourceNode.id,
-                    target: elem.targetNode.id,
-                    elemType: 'edge',
-                    position: elem.position,
-                    animated: elem.animated,
-                    data: '',
-                };
-            } else {
-                return {
-                    id: elem.id,
-                    type: elem.type,
-                    label: elem.label,
-                    elemType: 'node',
-                    position: elem.position,
-                    data: elem.data
-                };
+        let extractedData;
+        extractedData = getElements.value.map(elem => {
+            return {
+                id: elem.id,
+                label: elem.label,
+                type: elem.type,
+                position: elem.position,
+                parentNode: elem.parentNode,
+                data: elem.data,
+                dimensions: elem.dimensions,
+                animated: elem.animated,
+                isParent: elem.isParent,
+                source: elem.sourceNode?.id,
+                target: elem.targetNode?.id,
+                style: elem.style,
             }
         });
 
-        // Filter out the edges
-        const edges = extractedData.filter(item => item.elemType === 'edge');
-
-        // Create a new array to hold the sorted nodes
-        let sortedNodes = [];
-
-        // Find the edge where the sourceNode is startNode
-        let currentEdge = edges.find(edge => edge.sourceNode.id === 'start');
-
-        // If not find sourceNode==startNode in whole edge list, make alert and return
-        if (!currentEdge) {
-            notifyMessage('No edge is connected with the start node.');
-            return null;
-        }
-
-        // Add the sourceNode and targetNode to the sorted nodes array
-        sortedNodes.push(currentEdge.sourceNode);
-        sortedNodes.push(currentEdge.targetNode);
-
-        // Iteratively find the edge where the sourceNode is the previous targetNode
-        while (currentEdge.targetNode.id !== 'end') {
-            currentEdge = edges.find(edge => edge.sourceNode.id === currentEdge.targetNode.id);
-
-            // If no edge found, make alert and return
-            if (!currentEdge) {
-                notifyMessage('Found a node that is not correctly connected, a node must be start from input and end at' +
-                    ' output, and can only be connected once.');
-                return null;
-            }
-
-            // Add the targetNode to the sorted nodes array
-            sortedNodes.push(currentEdge.targetNode);
-        }
-
-        sortedNodes.push(...edges);
-        console.log(sortedNodes);
-        return sortedNodes;
+        return extractedData;
     }
 
 
