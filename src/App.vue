@@ -82,7 +82,6 @@ const items = ref([
 ]);
 
 const handleClick: MenuProps['onClick'] = e => {
-  console.log('click', e);
   switch (e.key) {
     case '1-1':
       router.push('/dashboard1');

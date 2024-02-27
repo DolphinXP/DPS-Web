@@ -1,7 +1,7 @@
 @import './base.css';
 
-@import '@vue-flow/core/dist/style.css';
-@import '@vue-flow/core/dist/theme-default.css';
-@import '@vue-flow/controls/dist/style.css';
-@import '@vue-flow/minimap/dist/style.css';
-/*@import '@vue-flow/node-resizer/dist/style.css';*/
+@import "bpmn-js/dist/assets/bpmn-js.css";
+@import "bpmn-js/dist/assets/diagram-js.css";
+@import "bpmn-js/dist/assets/bpmn-font/css/bpmn.css";
+@import "bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css";
+@import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";

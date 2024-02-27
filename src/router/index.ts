@@ -4,8 +4,8 @@ import WorkTemplate from '@/views/workflow/WorkTemplate.vue'
 import WorkItems from "@/views/workflow/WorkItems.vue";
 import Workflow from "@/views/workflow/Workflow.vue";
 import TestView1 from "@/views/test/TestView1.vue";
-import WorkTemplateUpdate from "@/views/workflow/WorkTemplatePane.vue";
 import NomadJobs from "@/views/test/NomadJobs.vue";
+import WorkTemplateCreate from "@/views/workflow/WorkTemplateCreate.vue";
 
 const router = createRouter({
     history: createWebHistory(import.meta.env.BASE_URL),
@@ -33,12 +33,7 @@ const router = createRouter({
         {
             path: '/WorkTemplateCreate',
             name: 'WorkTemplateCreate',
-            component: WorkTemplateUpdate,
-        },
-        {
-            path: '/WorkTemplateUpdate',
-            name: 'WorkTemplateUpdate',
-            component: WorkTemplateUpdate,
+            component: WorkTemplateCreate,
         },
         {
             path: '/WorkItems',
