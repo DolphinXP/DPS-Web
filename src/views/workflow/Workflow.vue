@@ -1,39 +1,30 @@
 <template>
   <a-button class="pull-right" type="primary" @click="handleAddTest">Add a test work</a-button>
-  <a-table :columns="columns" :dataSource="dataSource"
-           :expand-column-width="100">
-    <template #expandedRowRender="{ record }">
-      <div>
-        <workflow-detail></workflow-detail>
-      </div>
+  <a-table #bodyCell="{record, column}" :columns="columns"
+           :dataSource="dataSource">
+    <template v-if="column.dataIndex === 'StartOrder'">
+      <a @click="handleOrderView(record)">
+        <monitor-outlined></monitor-outlined>
+        View
+      </a>
+      <a-divider type="vertical"></a-divider>
+      <a @click="handleDownload(record)">
+        <download-outlined></download-outlined>
+        Download
+      </a>
     </template>
-    <template #expandColumnTitle>
-      <menu-fold-outlined></menu-fold-outlined>
-    </template>
 
-    <template #bodyCell="{record, column}">
-      <template v-if="column.dataIndex === 'StartOrder'">
-        <a @click="handleOrderView(record)">
-          <monitor-outlined></monitor-outlined>
-          View
-        </a>
-        <a-divider type="vertical"></a-divider>
-        <a @click="handleDownload(record)">
-          <download-outlined></download-outlined>
-          Download
-        </a>
-      </template>
+    <template v-if="column.dataIndex === 'Operation'">
 
-      <template v-if="column.dataIndex === 'Operation'">
-
-        <a-popconfirm
-            v-if="dataSource.length"
-            title="Sure to delete?"
-            @confirm="handleDel(record.id)"
-        >
-          <a>Delete</a>
-        </a-popconfirm>
-      </template>
+      <a @click="viewDetail(record)">Detail</a>
+      <a-divider type="vertical"></a-divider>
+      <a-popconfirm
+          v-if="dataSource.length"
+          title="Sure to delete?"
+          @confirm="handleDel(record.id)"
+      >
+        <a>Delete</a>
+      </a-popconfirm>
     </template>
   </a-table>
 
@@ -48,6 +39,14 @@
       <a-form-item label="Name" name="Name">
         <a-input v-model:value="formState.Name"/>
       </a-form-item>
+
+      <a-form-item label="Template" name="WorkTemplate">
+        <a-select
+            v-model:value="workTemplate"
+            :options="workTemplateOptions"
+        ></a-select>
+      </a-form-item>
+
       <a-form-item label="Order file" name="StartOrder">
         <a-upload v-model:file-list="fileList"
                   :max-count="1"
@@ -65,18 +64,22 @@
           file
         </div>
       </a-form-item>
+
       <a-form-item label="Parameter" name="StartParam">
         <a-input v-model:value="formState.StartParam"/>
       </a-form-item>
-
     </a-form>
   </a-modal>
 
   <!-- order view modal -->
-  <a-modal v-model:open="openXmlView" footer="" height="60%" title="Order XML" width="80%">
+  <a-modal v-model:open="openXmlView" footer="" title="Order XML" width="80%">
     <pre class="xml-view" v-text="xmlDisplay"></pre>
   </a-modal>
 
+  <!-- detail view modal -->
+  <a-modal v-model:open="openDetail" footer="" style="top: 20px; width: 100%;" title="Work detail">
+    <workflow-detail :record-id="detailId"></workflow-detail>
+  </a-modal>
 </template>
 
 <script lang="ts" setup>
@@ -84,8 +87,8 @@ import {onMounted, reactive, ref, type UnwrapRef} from "vue";
 import axios from "axios";
 import moment from "moment";
 import type {Rule} from "ant-design-vue/es/form";
-import {DownloadOutlined, MenuFoldOutlined, MonitorOutlined, UploadOutlined} from '@ant-design/icons-vue';
-import type {UploadChangeParam} from "ant-design-vue";
+import {DownloadOutlined, MonitorOutlined, UploadOutlined} from '@ant-design/icons-vue';
+import type {SelectProps, UploadChangeParam} from "ant-design-vue";
 import vkbeautify from 'vkbeautify';
 import WorkflowDetail from "@/views/workflow/WorkflowDetail.vue";
 
@@ -94,11 +97,17 @@ interface FormState {
   Name: string;
   StartOrder: string;
   StartParam: string;
+  WorkTemplate: string;
 }
 
 const dataSource = ref([]);
 const openSubmit = ref<boolean>(false);
 const openXmlView = ref<boolean>(false);
+const openDetail = ref<boolean>(false);
+
+const detailId = ref('');
+const workTemplate = ref('');
+const workTemplateOptions = ref<SelectProps['options']>([]);
 let xmlDisplay = ref('');
 let shakeIt = ref(false);
 
@@ -108,6 +117,7 @@ let formState: UnwrapRef<FormState> = reactive({
   Name: '',
   StartOrder: '',
   StartParam: '',
+  WorkTemplate: '',
 });
 
 const rules: Record<string, Rule[]> = {
@@ -117,16 +127,29 @@ const rules: Record<string, Rule[]> = {
 const fileList = ref([]);
 
 onMounted(() => {
+
   updateData();
 });
 
 const updateData = () => {
   axios.get('http://localhost:8080/api/v1/workflow/all').then(
       response => {
-        dataSource.value = response.data.data;
-        dataSource.value = dataSource.value.map(item => {
+        dataSource.value = response.data.data.map(item => {
           return {...item, key: item.id};
         });
+      }
+  ).catch(error => console.log(error))
+
+  // load work flow template
+  axios.get('http://localhost:8080/api/v1/workTemplate/all').then(
+      response => {
+        workTemplateOptions.value = response.data.data.map(data => ({
+          label: data.Name,
+          value: data.id,
+        }));
+        if (workTemplateOptions.value.length > 0) {
+          workTemplate.value = workTemplateOptions.value[0].value;
+        }
       }
   ).catch(error => console.log(error))
 };
@@ -143,6 +166,12 @@ const handleDownload = (record) => {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+const viewDetail = (record) => {
+  console.log('record', record);
+  detailId.value = record.id;
+  openDetail.value = true;
 }
 
 const columns = [
@@ -185,6 +214,8 @@ const handleAddTest = () => {
   formState.StartOrder = '';
   formState.StartParam = '';
   fileList.value = [];
+
+
   openSubmit.value = true;
 
 }
@@ -215,7 +246,7 @@ const handleChange = (info: UploadChangeParam) => {
     }
   }
 }
-const handleSubmit = (e: MouseEvent) => {
+const handleSubmit = async (e: MouseEvent) => {
   if (!formState.StartOrder) {
     shakeIt.value = true; // Start shaking
     setTimeout(() => {
@@ -226,13 +257,21 @@ const handleSubmit = (e: MouseEvent) => {
   formRef.value
       .validate()
       .then(() => {
-        axios.post('http://localhost:8080/api/v1/workflow/create', formState)
+        // fill actual work template content by id
+        axios.get('http://localhost:8080/api/v1/workTemplate/' + workTemplate.value)
             .then(response => {
               console.log('response', response);
-              updateData();
-              openSubmit.value = false;
+              formState.WorkTemplate = response.data.data
             });
-      })
+      }).then(() => {
+    console.log(formState)
+    axios.post('http://localhost:8080/api/v1/workflow/create', formState)
+        .then(response => {
+          console.log('response', response);
+          updateData();
+          openSubmit.value = false;
+        });
+  })
       .catch((error: any) => {
         console.log('error', error);
       });
