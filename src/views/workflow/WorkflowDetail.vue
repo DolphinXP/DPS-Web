@@ -1,21 +1,44 @@
 <script lang="ts" setup>
 
-import {onMounted} from "vue";
+import {computed, onMounted, ref} from "vue";
 import BpmnJS from "bpmn-js/lib/NavigatedViewer.js";
 import NavigatedViewer from "bpmn-js/lib/NavigatedViewer.js";
 import axios from "axios";
+import {useRoute} from "vue-router";
 
 let bpmnViewer: NavigatedViewer | null = null;
 let id = '';
 
-const props = defineProps({
-  recordId: String
-})
+
 let workflow = {}
 
+const jobs = [
+  {
+    key: '1',
+    name: 'Mike',
+  },
+  {
+    key: '2',
+    name: 'John',
+  },
+  {
+    key: '4',
+    name: 'Tom',
+  },
+  {
+    key: '5',
+    name: 'Michael',
+  },
+  {
+    key: '6',
+    name: 'Alice',
+  },
+];
+
+
 onMounted(() => {
-  console.log(props.recordId)
-  id = props.recordId!;
+  const route = useRoute();
+  id = <string>route.query.id;
 
   bpmnViewer = new BpmnJS({
     container: "#canvas",
@@ -49,6 +72,7 @@ onMounted(() => {
         createNewDiagram(workflow.WorkTemplate.BpmnXml);
       }
   ).catch(error => console.log(error))
+
 })
 
 async function createNewDiagram(data) {
@@ -69,53 +93,134 @@ function refresh() {
   canvas.zoom('fit-viewport');
 }
 
+function handleZoomIn() {
+  let zoomScroll = bpmnViewer.get('zoomScroll');
+  zoomScroll.stepZoom(1);
+}
+
+function handleZoomOut() {
+  let zoomScroll = bpmnViewer.get('zoomScroll');
+  zoomScroll.stepZoom(-1);
+}
+
+// test
+let selectedItem = ref({});
+let searchTerm = ref('');
+
+function updateSearch(event) {
+  // You might not need this if Ant Design handles reactivity for you.
+  searchTerm.value = event.target.value;
+}
+
+let filteredJobs = computed(() => {
+  if (!searchTerm.value) {
+    return jobs;
+  }
+  return jobs.filter(job => job.name.toLowerCase().includes(searchTerm.value.toLowerCase()));
+});
+
+function itemClicked(item) {
+  console.log('itemClicked', item);
+  selectedItem.value = item;
+}
+
 </script>
 
 <template>
   <div class="container">
     <div class="top-bar">
       <div>
+        <a-button @click="handleZoomIn">Zoom in</a-button>
+        <a-divider type="vertical"></a-divider>
+        <a-button @click="handleZoomOut">Zoom out</a-button>
+        <a-divider type="vertical"></a-divider>
+        <a-button @click="refresh">Fit</a-button>
+      </div>
+      <div>
         <a-button type="primary">Start</a-button>
         <a-divider type="vertical"></a-divider>
         <a-button type="primary">Stop</a-button>
       </div>
-      <div></div>
     </div>
 
     <div class="content">
       <div id="canvas" class="canvas"></div>
-      <div class="detail-content">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Error, perspiciatis?
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus aut autem corporis cumque distinctio dolores
-        ea eaque eius enim eos esse facere incidunt itaque necessitatibus nobis, quibusdam quo repudiandae rerum, saepe
-        sed sequi sit velit, veritatis! Animi beatae consequuntur dolore dolorem doloribus dolorum eos fugiat fugit
-        harum ipsum magni maxime molestias necessitatibus, nobis possimus provident quas qui quibusdam quos repellat sed
-        similique voluptas voluptate voluptatem voluptatum. Accusamus amet aperiam assumenda, autem ducimus expedita
-        harum in inventore iure laudantium modi neque nisi nulla, numquam perspiciatis quasi qui quisquam sint ut
-        veritatis! In, possimus, temporibus. Esse, eveniet expedita facere quaerat quo tempore. Lorem ipsum dolor sit
-        amet, consectetur adipisicing elit. Asperiores at aut fugiat incidunt ipsum officia perferendis reiciendis sint
-        vel veniam. Atque id ipsum, iure laborum mollitia odio optio rerum saepe.
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Atque blanditiis ducimus illum ipsa laborum
-        necessitatibus nobis perspiciatis praesentium quaerat? Aperiam cupiditate dicta doloribus in incidunt
-        praesentium reprehenderit temporibus ullam veniam vitae? Assumenda atque consequuntur culpa cupiditate dicta eos
-        est eum, fugit ipsam laudantium magnam neque non nostrum pariatur quibusdam quisquam veniam. Alias facilis
-        libero non quisquam sit? Aspernatur consectetur eos eveniet fugiat id laboriosam quam quia recusandae similique
-        soluta! A alias aperiam asperiores aspernatur aut blanditiis consequatur culpa dignissimos et eum, ex expedita
-        explicabo harum id inventore ipsum laboriosam libero magni maiores modi nam necessitatibus nesciunt nostrum,
-        omnis pariatur perferendis perspiciatis quas quasi ratione reiciendis rem reprehenderit repudiandae rerum sunt
-        totam ut voluptas. Ab aliquid architecto commodi cumque dolorum eius eligendi et, facere, fugiat iste iure iusto
-        labore laborum, maiores minus molestiae nesciunt non nostrum numquam odit omnis perferendis perspiciatis quia
-        quo quos ratione vel voluptatibus? Dignissimos distinctio doloribus explicabo facere nihil, pariatur praesentium
-        provident quos repellendus tenetur? Aliquam amet corporis cupiditate debitis doloribus dolorum eligendi facilis
-        illum iste, laboriosam magni nulla odio placeat possimus praesentium, qui saepe sed similique sint soluta
-        suscipit voluptate voluptates voluptatum. Accusamus assumenda aut culpa ipsa ipsam maxime molestiae nihil nulla
-        obcaecati. Adipisci cum dignissimos eius facere minus sed totam? Exercitationem, modi, natus! Accusantium
-        aliquid aperiam blanditiis cum cupiditate omnis ut voluptate. Dolore est illum qui sapiente voluptatibus!
-        Aperiam aspernatur blanditiis consequuntur eligendi explicabo hic ipsam laboriosam neque repellendus saepe.
-        Aspernatur, cum fuga magni obcaecati repudiandae voluptatum. Autem cum cumque eaque eum in labore modi molestias
-        nam obcaecati praesentium tenetur unde, veritatis. Assumenda atque cumque delectus dolorum eligendi eveniet,
-        facilis fugiat ipsum iste iure, labore minima, porro praesentium quis sapiente similique sit voluptas. Adipisci
-        autem cupiditate eos expedita ipsum laborum neque, odio provident quae voluptas. Atque est laborum magnam modi
-        repudiandae? Fugit minima quae reiciendis.
+
+      <div class="detail-content">
+        <a-card size="small" style="width: 320px;" title="Jobs">
+
+          <a-input v-model="searchTerm" placeholder="Search jobs" style="margin-bottom: 5px;" @input="updateSearch"/>
+          <a-list :data-source="filteredJobs" pagination="" size="small">
+            <template #renderItem="{ item }">
+              <a-list-item :class="{'selected-item': item.key === selectedItem?.key}" style="cursor: pointer"
+                           @click="itemClicked(item)">{{ item.name }}
+              </a-list-item>
+            </template>
+          </a-list>
+        </a-card>
+
+        <a-card size="small" style="width: 320px;" title="Timeline">
+          <a-timeline>
+            <a-timeline-item color="green">Create a services site 2015-09-01</a-timeline-item>
+            <a-timeline-item color="green">Create a services site 2015-09-01</a-timeline-item>
+            <a-timeline-item color="red">
+              <p>Solve initial network problems 1</p>
+              <p>Solve initial network problems 2</p>
+              <p>Solve initial network problems 3 2015-09-01</p>
+            </a-timeline-item>
+            <a-timeline-item>
+              <p>Technical testing 1</p>
+              <p>Technical testing 2</p>
+              <p>Technical testing 3 2015-09-01</p>
+            </a-timeline-item>
+            <a-timeline-item color="gray">
+              <p>Technical testing 1</p>
+              <p>Technical testing 2</p>
+              <p>Technical testing 3 2015-09-01</p>
+            </a-timeline-item>
+            <a-timeline-item color="gray">
+              <p>Technical testing 1</p>
+              <p>Technical testing 2</p>
+              <p>Technical testing 3 2015-09-01</p>
+            </a-timeline-item>
+            <a-timeline-item color="#00CCFF">
+              <template #dot>
+                <SmileOutlined/>
+              </template>
+              <p>Custom color testing</p>
+            </a-timeline-item>
+          </a-timeline>
+        </a-card>
+
+        <a-card size="small" style="flex-grow: 1" title="Info">
+          <a-descriptions bordered layout="vertical">
+            <a-descriptions-item label="Product">Cloud Database</a-descriptions-item>
+            <a-descriptions-item label="Billing Mode">Prepaid</a-descriptions-item>
+            <a-descriptions-item label="Automatic Renewal">YES</a-descriptions-item>
+            <a-descriptions-item label="Order time">2018-04-24 18:00:00</a-descriptions-item>
+            <a-descriptions-item :span="2" label="Usage Time">2019-04-24 18:00:00</a-descriptions-item>
+            <a-descriptions-item :span="3" label="Status">
+              <a-badge status="processing" text="Running"/>
+            </a-descriptions-item>
+            <a-descriptions-item label="Negotiated Amount">$80.00</a-descriptions-item>
+            <a-descriptions-item label="Discount">$20.00</a-descriptions-item>
+            <a-descriptions-item label="Official Receipts">$60.00</a-descriptions-item>
+            <a-descriptions-item label="Config Info">
+              Data disk type: MongoDB
+              <br/>
+              Database version: 3.4
+              <br/>
+              Package: dds.mongo.mid
+              <br/>
+              Storage space: 10 GB
+              <br/>
+              Replication factor: 3
+              <br/>
+              Region: East China 1
+              <br/>
+            </a-descriptions-item>
+          </a-descriptions>
+        </a-card>
       </div>
     </div>
 
@@ -124,11 +229,19 @@ function refresh() {
 </template>
 
 <style scoped>
+.selected-item {
+  color: white;
+  background-color: #1890ff; /* Change this to your preferred color */
+}
 
 .container {
   display: flex;
   flex-direction: column;
-  height: 90%;
+  height: 100%;
+}
+
+.ant-card {
+  margin: 0 5px;
 }
 
 .content {
@@ -144,10 +257,10 @@ function refresh() {
 
 .content .detail-content {
   flex: 1;
+  display: flex;
   background-color: #f5f5f5;
   padding: 10px;
   overflow: auto;
-
 }
 
 .top-bar {

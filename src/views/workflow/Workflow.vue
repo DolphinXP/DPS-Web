@@ -1,6 +1,6 @@
 <template>
   <a-button class="pull-right" type="primary" @click="handleAddTest">Add a test work</a-button>
-  <a-table #bodyCell="{record, column}" :columns="columns"
+  <a-table #bodyCell="{row, column, record}" :columns="columns"
            :dataSource="dataSource">
     <template v-if="column.dataIndex === 'StartOrder'">
       <a @click="handleOrderView(record)">
@@ -76,10 +76,6 @@
     <pre class="xml-view" v-text="xmlDisplay"></pre>
   </a-modal>
 
-  <!-- detail view modal -->
-  <a-modal v-model:open="openDetail" footer="" style="top: 20px; width: 100%;" title="Work detail">
-    <workflow-detail :record-id="detailId"></workflow-detail>
-  </a-modal>
 </template>
 
 <script lang="ts" setup>
@@ -90,7 +86,7 @@ import type {Rule} from "ant-design-vue/es/form";
 import {DownloadOutlined, MonitorOutlined, UploadOutlined} from '@ant-design/icons-vue';
 import type {SelectProps, UploadChangeParam} from "ant-design-vue";
 import vkbeautify from 'vkbeautify';
-import WorkflowDetail from "@/views/workflow/WorkflowDetail.vue";
+import router from "@/router";
 
 interface FormState {
   Id: string;
@@ -103,7 +99,6 @@ interface FormState {
 const dataSource = ref([]);
 const openSubmit = ref<boolean>(false);
 const openXmlView = ref<boolean>(false);
-const openDetail = ref<boolean>(false);
 
 const detailId = ref('');
 const workTemplate = ref('');
@@ -171,7 +166,10 @@ const handleDownload = (record) => {
 const viewDetail = (record) => {
   console.log('record', record);
   detailId.value = record.id;
-  openDetail.value = true;
+  router.push({
+    name: 'WorkflowDetail',
+    query: {id: record.id}
+  });
 }
 
 const columns = [
@@ -290,6 +288,7 @@ const handleSubmit = async (e: MouseEvent) => {
   background-color: #2c3e50;
   color: #ecf0f1;
 }
+
 
 .shake-it {
   animation: shake 0.82s cubic-bezier(.36, .07, .19, .97) both;
