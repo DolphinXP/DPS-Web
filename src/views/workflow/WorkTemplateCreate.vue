@@ -11,15 +11,30 @@ let modeler: Modeler | null = null;
 let elementRegistry = null;
 let modeling = null;
 
-let taskId = '';
+let elementId = ''; // bpmn element id
 const workItemId = ref('');
-const taskValue = ref('');
-const hideInput = ref(true);
+const optionsValue = ref('');
+const optionsPanel = ref(''); // task, sequenceFlow
 
 const workItemOptions = ref<SelectProps['options']>([
   {
     value: '',
     label: '',
+  },
+]);
+
+const sequenceOptions = ref<SelectProps['options']>([
+  {
+    value: '',
+    label: '',
+  },
+  {
+    value: 'Standard',
+    label: 'Standard',
+  },
+  {
+    value: 'Calibration',
+    label: 'Calibration',
   },
 ]);
 
@@ -59,24 +74,37 @@ onMounted(() => {
   // add event listener
   let eventBus = modeler.get('eventBus');
   eventBus!.on('element.click', function (event: any) {
+    elementId = event.element.id;
+
     if (event.element.type == 'bpmn:Task') {
-      hideInput.value = false;
-      taskId = event.element.id;
-      taskValue.value = event.element.businessObject.name;
+      optionsPanel.value = 'task';
+      optionsValue.value = event.element.businessObject.name;
+    } else if (event.element.type == 'bpmn:SequenceFlow') {
+      optionsPanel.value = 'sequenceFlow';
+
     } else {
-      hideInput.value = true;
+      optionsPanel.value = '';
     }
   });
 
   // watch taskValue
-  watch(taskValue, (newValue) => {
-    if (taskId && newValue) {
-      const taskElement = elementRegistry.get(taskId);
-      if (taskElement) {
-        const option = workItemOptions.value.find(option => option.value === newValue);
-        if (option) {
-          workItemId.value = option.value;
-          modeling.updateProperties(taskElement, {name: option.label, workItemId: option.value});
+  watch(optionsValue, (newValue) => {
+    if (elementId && newValue) {
+      const element = elementRegistry.get(elementId);
+      if (element) {
+        switch (element.type) {
+          case 'bpmn:Task': {
+            const option = workItemOptions.value.find(option => option.value === newValue);
+            if (option) {
+              workItemId.value = option.value;
+              modeling.updateProperties(element, {name: option.label, workItemId: option.value});
+            }
+            break;
+          }
+          case 'bpmn:SequenceFlow': {
+            modeling.updateProperties(element, {name: newValue});
+            break;
+          }
         }
       }
     }
@@ -163,18 +191,28 @@ function refresh() {
         <a-button type="primary" @click="saveImage">Save SVG</a-button>
       </div>
     </div>
+
     <div class="content">
       <div id="canvas" class="canvas"></div>
-      <div :hidden="hideInput" class="bottom-bar">
-        <label style="margin: 10px;">Select work item for task:</label>
-        <a-select
-            ref="select"
-            v-model:value="taskValue"
-            :options="workItemOptions"
-            style="width: 120px"
-        ></a-select>
-        <span style="margin: 10px;">id: {{ workItemId }}</span>
-      </div>
+    </div>
+
+    <div v-show="optionsPanel == 'task'" class="option-panel" style="height: 160px;">
+      <label>Select work item for task:</label>
+      <a-select
+          ref="select"
+          v-model:value="optionsValue"
+          :options="workItemOptions"
+      ></a-select>
+      <span>id: {{ workItemId }}</span>
+    </div>
+
+    <div v-show="optionsPanel == 'sequenceFlow'" class="option-panel" style="height: 100px;">
+      <label>Select sequence type</label>
+      <a-select
+          ref="select"
+          v-model:value="optionsValue"
+          :options="sequenceOptions"
+      ></a-select>
     </div>
   </div>
 
@@ -214,11 +252,17 @@ function refresh() {
   border-radius: 10px;
 }
 
-.bottom-bar {
+.option-panel {
   background-color: #E1F0DA;
   padding: 10px;
   border-radius: 5px;
-  height: 60px;
+  position: fixed;
+  z-index: 1000;
+  right: 100px;
+  top: 200px;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
 }
 
 </style>
@@ -226,21 +270,34 @@ function refresh() {
 <script lang="ts">
 function getDefaultXml() {
   return `<?xml version="1.0" encoding="UTF-8"?>
-    <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" targetNamespace="http://www.flowable.org/processdef">
-      <process id="process_1" name="process_1">
-        <startEvent id="startNode1" name="Start" />
-      </process>
-      <bpmndi:BPMNDiagram id="BPMNDiagram_flow">
-        <bpmndi:BPMNPlane id="BPMNPlane_flow" bpmnElement="T-2d89e7a3-ba79-4abd-9f64-ea59621c258c">
-          <bpmndi:BPMNShape id="BPMNShape_startNode1" bpmnElement="startNode1" bioc:stroke="">
-            <omgdc:Bounds x="240" y="200" width="30" height="30" />
-            <bpmndi:BPMNLabel>
-              <omgdc:Bounds x="242" y="237" width="23" height="14" />
-            </bpmndi:BPMNLabel>
-          </bpmndi:BPMNShape>
-        </bpmndi:BPMNPlane>
-      </bpmndi:BPMNDiagram>
-    </definitions>
-    `
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:bioc="http://bpmn.io/schema/bpmn/biocolor/1.0" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:flowable="http://flowable.org/bpmn" targetNamespace="http://www.flowable.org/processdef">
+  <process id="process_1" name="process_1">
+    <startEvent id="startNode1" name="Start">
+      <outgoing>Flow_021a60b</outgoing>
+    </startEvent>
+    <task id="Activity_0im6xch">
+      <incoming>Flow_021a60b</incoming>
+    </task>
+    <sequenceFlow id="Flow_021a60b" sourceRef="startNode1" targetRef="Activity_0im6xch" />
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_flow">
+    <bpmndi:BPMNPlane id="BPMNPlane_flow" bpmnElement="process_1">
+      <bpmndi:BPMNShape id="BPMNShape_startNode1" bpmnElement="startNode1" bioc:stroke="">
+        <omgdc:Bounds x="240" y="200" width="30" height="30" />
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds x="242" y="237" width="23" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0im6xch_di" bpmnElement="Activity_0im6xch">
+        <omgdc:Bounds x="390" y="175" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_021a60b_di" bpmnElement="Flow_021a60b">
+        <di:waypoint x="270" y="215" />
+        <di:waypoint x="390" y="215" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
+`
 }
 </script>
