@@ -4,13 +4,19 @@ import {onMounted, ref, watch} from "vue";
 import myPaletteProvider from "./bpmn/palette";
 import myContextMenuProvider from "./bpmn/contextMenu";
 import Modeler from "bpmn-js/lib/Modeler";
-import type {SelectProps} from "ant-design-vue";
+import {notification, type SelectProps} from "ant-design-vue";
 import axios from "axios";
+import router from "@/router";
+import {useRoute} from "vue-router";
 
 let modeler: Modeler | null = null;
 let elementRegistry = null;
 let modeling = null;
 
+let id = ref(''); // work template id
+let mode = ''; // create, update
+
+let templateName = ref('');
 let elementId = ''; // bpmn element id
 const workItemId = ref('');
 const optionsValue = ref('');
@@ -39,6 +45,10 @@ const sequenceOptions = ref<SelectProps['options']>([
 ]);
 
 onMounted(() => {
+  const route = useRoute();
+  id.value = <string>route.query.id;
+
+
   // must import bpmn-js css to display palette and context menus
   modeler = new Modeler({
     container: "#canvas",
@@ -58,8 +68,6 @@ onMounted(() => {
   elementRegistry = modeler.get('elementRegistry');
   modeling = modeler.get('modeling')
 
-  createNewDiagram(getDefaultXml());
-
   // load work items
   axios.get('http://localhost:8080/api/v1/workItem/all').then(
       response => {
@@ -70,6 +78,20 @@ onMounted(() => {
         //workItemOptions.value.unshift({label: '', value: ''});
       }
   ).catch(error => console.log(error))
+
+  if (id.value) // update mode
+  {
+    mode = 'update';
+    axios.get('http://localhost:8080/api/v1/workTemplate/' + id.value).then(
+        response => {
+          templateName.value = response.data.data.Name;
+          createNewDiagram(response.data.data.BpmnXml);
+        }
+    ).catch(error => console.log(error))
+  } else {
+    mode = 'create';
+    createNewDiagram(getDefaultXml());
+  }
 
   // add event listener
   let eventBus = modeler.get('eventBus');
@@ -87,7 +109,7 @@ onMounted(() => {
     }
   });
 
-  // watch taskValue
+  // watch selected option values
   watch(optionsValue, (newValue) => {
     if (elementId && newValue) {
       const element = elementRegistry.get(elementId);
@@ -109,16 +131,18 @@ onMounted(() => {
       }
     }
   });
+
+
 })
 
 
 async function createNewDiagram(data) {
   // 将字符串转换成图显示出来
   data = data.replace(/<!\[CDATA\[(.+?)]]>/g, function (match, str) {
-    return str.replace(/</g, '&lt;')
+    return str.replace(/</g, '&lt;');
   })
   try {
-    await modeler?.importXML(data)
+    await modeler?.importXML(data);
   } catch (err) {
     console.error(err.message, err.warnings)
   }
@@ -153,27 +177,66 @@ function downloadFile(filename, data, type) {
   window.URL.revokeObjectURL(url)
 }
 
-async function saveDiagram() {
+async function saveDiagram(download = true) {
   try {
     const {xml} = await modeler!.saveXML({format: true})
-    downloadFile(`workflow.bpmn20.xml`, xml, 'application/xml')
+    if (download) {
+      downloadFile(`workflow.bpmn20.xml`, xml, 'application/xml');
+    }
+    return xml;
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
 }
 
-async function saveImage() {
+async function saveImage(download = true) {
   try {
-    const {svg} = await modeler.saveSVG({format: true})
-    downloadFile("workflow.bpmn20.svg", svg, 'image/svg+xml')
-    return svg
+    const {svg} = await modeler.saveSVG({format: true});
+    if (download) {
+      downloadFile("workflow.bpmn20.svg", svg, 'image/svg+xml')
+    }
+    return svg;
   } catch (err) {
-    console.log(err)
+    console.log(err);
   }
+}
+
+function submitTemplate() {
+  console.log('submit work template')
+  templateName.value = templateName.value.trim();
+  if (!templateName.value) {
+    notification['warning']({
+      message: 'Error',
+      description:
+          'Please input template name.',
+    });
+    return;
+  }
+
+  modeler.saveXML({format: true}).then(({xml}) => {
+    if (mode === 'create') {
+      axios.post('http://localhost:8080/api/v1/workTemplate/create', {
+        BpmnXml: xml,
+        Name: templateName.value,
+      }).then(response => {
+        console.log(response);
+        router.push({name: 'WorkTemplate'});
+      }).catch(error => console.log(error))
+    } else if (mode === 'update') {
+      axios.put('http://localhost:8080/api/v1/workTemplate/update/' + id.value, {
+        id: id.value,
+        BpmnXml: xml,
+        Name: templateName.value,
+      }).then(response => {
+        console.log(response);
+        router.push({name: 'WorkTemplate'});
+      }).catch(error => console.log(error))
+    }
+  })
 }
 
 function refresh() {
-  let canvas = modeler.get('canvas');
+  let canvas = modeler.get('#canvas');
   canvas.zoom('fit-viewport');
 }
 
@@ -182,13 +245,17 @@ function refresh() {
 <template>
   <div class="container">
     <div class="top-bar">
-      <h1>Work Template / Create</h1>
+      <h1>Work Template Design</h1>
       <div>
+        <a-button @click="saveDiagram">Save XML</a-button>
+        <a-divider type="vertical"/>
+        <a-button @click="saveImage">Save SVG</a-button>
+        <a-divider type="vertical"/>
         <input class="file-input" type="file" @change="loadDiagram"/>
 
-        <a-button type="primary" @click="saveDiagram">Save XML</a-button>
-        <a-divider type="vertical"/>
-        <a-button type="primary" @click="saveImage">Save SVG</a-button>
+        <span>Template Name:</span>
+        <a-input v-model:value="templateName" style="width: 200px; margin: 0 10px;"/>
+        <a-button type="primary" @click="submitTemplate">Submit</a-button>
       </div>
     </div>
 
