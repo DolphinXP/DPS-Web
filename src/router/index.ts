@@ -41,7 +41,6 @@ const router = createRouter({
             path: '/WorkTemplateDesign',
             name: 'WorkTemplateDesign',
             component: WorkTemplateDesign,
-            props: true
         },
         {
             path: '/WorkItems',

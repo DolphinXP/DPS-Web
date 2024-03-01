@@ -72,7 +72,7 @@ const items = ref([
   getItem('2', 'Workflow', () => h(AliwangwangOutlined), [
     getItem('2-1', 'Work template'),
     getItem('2-2', 'Work items'),
-    getItem('2-3', 'Workflow'),
+    getItem('2-3', 'Work flow'),
   ]),
   {type: 'divider'},
   getItem('3', 'Test', () => h(ApartmentOutlined), [
