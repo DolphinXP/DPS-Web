@@ -213,7 +213,6 @@ const handleAddTest = () => {
   formState.StartParam = '';
   fileList.value = [];
 
-
   openSubmit.value = true;
 
 }
@@ -283,7 +282,7 @@ const handleSubmit = async (e: MouseEvent) => {
 }
 
 .xml-view {
-  height: 600px;
+  height: 80vh;
   overflow: auto;
   background-color: #2c3e50;
   color: #ecf0f1;

@@ -4,7 +4,7 @@ import WorkTemplate from '@/views/workflow/WorkTemplate.vue'
 import WorkItems from "@/views/workflow/WorkItems.vue";
 import Workflow from "@/views/workflow/Workflow.vue";
 import TestView1 from "@/views/test/TestView1.vue";
-import NomadJobs from "@/views/test/NomadJobs.vue";
+import NomadJobs from "@/views/nomad/NomadJobs.vue";
 import WorkTemplateDesign from "@/views/workflow/WorkTemplateDesign.vue";
 import WorkflowDetail from "@/views/workflow/WorkflowDetail.vue";
 
@@ -57,6 +57,11 @@ const router = createRouter({
             path: '/WorkflowDetail',
             name: 'WorkflowDetail',
             component: WorkflowDetail
+        },
+        {
+            path: '/NomadJobs',
+            name: 'NomadJobs',
+            component: NomadJobs
         },
     ]
 })

@@ -193,7 +193,7 @@ function itemClicked(item) {
         </a-card>
 
         <a-card size="small" style="flex-grow: 1" title="Info">
-          <a-descriptions bordered layout="vertical">
+          <a-descriptions bordered layout="vertical" size="small">
             <a-descriptions-item label="Product">Cloud Database</a-descriptions-item>
             <a-descriptions-item label="Billing Mode">Prepaid</a-descriptions-item>
             <a-descriptions-item label="Automatic Renewal">YES</a-descriptions-item>

@@ -75,9 +75,13 @@ const items = ref([
     getItem('2-3', 'Work flow'),
   ]),
   {type: 'divider'},
-  getItem('3', 'Test', () => h(ApartmentOutlined), [
-    getItem('3-1', 'Test1'),
-    getItem('3-2', 'Test2'),
+  getItem('3', 'Nomad', () => h(ApartmentOutlined), [
+    getItem('3-1', 'Jobs'),
+  ]),
+  {type: 'divider'},
+  getItem('100', 'Test', () => h(ApartmentOutlined), [
+    getItem('100-1', 'Test1'),
+    getItem('100-2', 'Test2'),
   ]),
 ]);
 
@@ -99,9 +103,12 @@ const handleClick: MenuProps['onClick'] = e => {
       router.push('/Workflow');
       break;
     case '3-1':
+      router.push('/NomadJobs');
+      break;
+    case '100-1':
       router.push('/test1');
       break;
-    case '3-2':
+    case '100-2':
       router.push('/test2');
       break;
   }
