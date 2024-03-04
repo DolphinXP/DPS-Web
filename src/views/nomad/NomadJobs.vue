@@ -38,11 +38,12 @@ const openLog = ref(false);
 const logContent = ref('');
 
 let currentId = ref('');
-let refreshTimer: ReturnType<typeof setInterval> | null = null;
 let logTimer: ReturnType<typeof setInterval> | null = null;
+let eventSource: EventSource | null = null;
 
 onMounted(() => {
   updateData();
+  startEventStream();
 
   watch(openLog, (newValue, oldValue) => {
     if (newValue) {
@@ -50,7 +51,6 @@ onMounted(() => {
       logTimer = setInterval(() => {
         axios.get('http://localhost:8080/api/v1/nomad/logs/' + currentId.value + "/stdout")
             .then(response => {
-              console.log('response', response);
               logContent.value = response.data.data;
             }).catch(error => {
           console.log(error);
@@ -67,29 +67,40 @@ onMounted(() => {
   });
 });
 
+onUnmounted(() => {
+  if (logTimer) {
+    clearInterval(logTimer);
+  }
+  if (eventSource) {
+    eventSource.close();
+  }
+});
+
+const startEventStream = () => {
+  eventSource = new EventSource('http://localhost:8080/api/v1/nomad/jobs/stream');
+
+  eventSource.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    dataSource.value = data.data;
+    dataSource.value.sort((a, b) => -a.SubmitTime + b.SubmitTime);
+  };
+
+  eventSource.onerror = (error) => {
+    console.error("EventSource failed:", error);
+  };
+};
+
+
 const updateData = () => {
   axios.get('http://localhost:8080/api/v1/nomad/jobs').then(
       response => {
         dataSource.value = response.data.data;
-        dataSource.value.sort((a, b) => a.SubmitTime - b.SubmitTime);
+        dataSource.value.sort((a, b) => -a.SubmitTime + b.SubmitTime);
       }
-  ).catch(error => console.log(error))
-      .finally(() => {
-        // Clear the previous timeout if it exists
-        if (refreshTimer) {
-          clearTimeout(refreshTimer);
-        }
-        // Schedule the next update
-        refreshTimer = setTimeout(updateData, refreshInterval.value * 1000);
-      });
+  ).catch(error => console.log(error));
+
 };
 
-onUnmounted(() => {
-  // Clear the timeout when the component is unmounted
-  if (refreshTimer) {
-    clearTimeout(refreshTimer);
-  }
-});
 
 const columns = [
   {
@@ -136,7 +147,7 @@ const handleNew = (id: string) => {
 
 const handleStop = (record: any) => {
   currentId.value = record.ID;
-  axios.delete('http://localhost:8080/api/v1/nomad/jobs/stop/' + id)
+  axios.delete('http://localhost:8080/api/v1/nomad/jobs/stop/' + currentId.value)
       .then(response => {
         console.log('response', response);
         updateData();
@@ -145,7 +156,7 @@ const handleStop = (record: any) => {
 
 const handleDel = (record: any) => {
   currentId.value = record.ID;
-  axios.delete('http://localhost:8080/api/v1/nomad/jobs/delete/' + id)
+  axios.delete('http://localhost:8080/api/v1/nomad/jobs/delete/' + currentId.value)
       .then(response => {
         console.log('response', response);
         updateData();
