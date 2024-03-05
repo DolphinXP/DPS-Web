@@ -1,14 +1,5 @@
 <template>
   <div class="pull-right">
-    <label style="margin: 0 5px;">Refresh interval:</label>
-    <a-select v-model:value="refreshInterval" style="margin: 0 5px; width: 120px;">
-      <a-select-option value="1">1s</a-select-option>
-      <a-select-option value="3">3s</a-select-option>
-      <a-select-option value="5">5s</a-select-option>
-      <a-select-option value="10">10s</a-select-option>
-      <a-select-option value="10000">Don't refresh</a-select-option>
-    </a-select>
-    <a-divider type="vertical"/>
     <a-button @click="handleNew">Add Test</a-button>
   </div>
   <div>
@@ -33,7 +24,6 @@ import {onMounted, onUnmounted, ref, watch} from "vue";
 import axios from "axios";
 
 const dataSource = ref([]);
-const refreshInterval = ref('1');
 const openLog = ref(false);
 const logContent = ref('');
 
@@ -56,7 +46,7 @@ onMounted(() => {
           console.log(error);
           logContent.value = error.response.data.data;
         })
-      }, 300);
+      }, 1000);
     } else {
       // Disable logTimer
       if (logTimer) {

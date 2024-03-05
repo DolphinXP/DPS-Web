@@ -5,3 +5,5 @@
 @import "bpmn-js/dist/assets/bpmn-font/css/bpmn.css";
 @import "bpmn-js/dist/assets/bpmn-font/css/bpmn-codes.css";
 @import "bpmn-js/dist/assets/bpmn-font/css/bpmn-embedded.css";
+
+@import "primevue/resources/themes/aura-light-green/theme.css";

@@ -42,17 +42,17 @@
 
       <a-form-item label="Template" name="WorkTemplate">
         <a-select
-            v-model:value="workTemplate"
+            v-model:value="formState.WorkTemplateId"
             :options="workTemplateOptions"
         ></a-select>
       </a-form-item>
 
-      <a-form-item label="Order file" name="StartOrder">
+      <a-form-item label="Order file" name="OrderFile">
         <a-upload v-model:file-list="fileList"
                   :max-count="1"
                   accept=".xml"
                   action="#"
-                  name="formState.StartOrder"
+                  name="formState.OrderFile"
                   @change="handleChange"
         >
           <a-button>
@@ -60,7 +60,7 @@
             Click to select order XML file
           </a-button>
         </a-upload>
-        <div v-if="!formState.StartOrder" :class="{'shake-it' : shakeIt }">Please select an order
+        <div v-if="!formState.OrderFile" :class="{'shake-it' : shakeIt }">Please select an order
           file
         </div>
       </a-form-item>
@@ -85,15 +85,15 @@ import moment from "moment";
 import type {Rule} from "ant-design-vue/es/form";
 import {DownloadOutlined, MonitorOutlined, UploadOutlined} from '@ant-design/icons-vue';
 import type {SelectProps, UploadChangeParam} from "ant-design-vue";
-import vkbeautify from 'vkbeautify';
 import router from "@/router";
+import type {FileType} from "ant-design-vue/es/upload/interface";
 
 interface FormState {
   Id: string;
   Name: string;
-  StartOrder: string;
   StartParam: string;
-  WorkTemplate: string;
+  WorkTemplateId: string;
+  OrderFile: FileType, // hold order file
 }
 
 const dataSource = ref([]);
@@ -101,7 +101,6 @@ const openSubmit = ref<boolean>(false);
 const openXmlView = ref<boolean>(false);
 
 const detailId = ref('');
-const workTemplate = ref('');
 const workTemplateOptions = ref<SelectProps['options']>([]);
 let xmlDisplay = ref('');
 let shakeIt = ref(false);
@@ -110,9 +109,9 @@ const formRef = ref();
 let formState: UnwrapRef<FormState> = reactive({
   Id: '',
   Name: '',
-  StartOrder: '',
   StartParam: '',
-  WorkTemplate: '',
+  WorkTemplateId: '',
+  OrderFile: null,
 });
 
 const rules: Record<string, Rule[]> = {
@@ -129,9 +128,13 @@ onMounted(() => {
 const updateData = () => {
   axios.get('http://localhost:8080/api/v1/workflow/all').then(
       response => {
-        dataSource.value = response.data.data.map(item => {
-          return {...item, key: item.id};
-        });
+        if (response.data.data) {
+          dataSource.value = response.data.data.map(item => {
+            return {...item, key: item.id};
+          });
+        } else {
+          dataSource.value = [];
+        }
       }
   ).catch(error => console.log(error))
 
@@ -142,25 +145,33 @@ const updateData = () => {
           label: data.Name,
           value: data.id,
         }));
-        if (workTemplateOptions.value.length > 0) {
-          workTemplate.value = workTemplateOptions.value[0].value;
-        }
       }
   ).catch(error => console.log(error))
 };
 const handleOrderView = (record) => {
-  xmlDisplay.value = vkbeautify.xml(record.StartOrder);
-  openXmlView.value = true;
+  axios.get(record.OrderFilePath)
+      .then(response => {
+        xmlDisplay.value = response.data;
+        openXmlView.value = true;
+      })
+      .catch(error => {
+        console.log('Error fetching XML file:', error);
+      });
 }
 const handleDownload = (record) => {
-  const blob = new Blob([record.StartOrder], {type: 'text/xml'});
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `order-${record.id}-download.xml`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  axios.get(record.OrderFilePath, {responseType: 'blob'})
+      .then(response => {
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', record.OrderFileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      })
+      .catch(error => {
+        console.log('Error downloading XML file:', error);
+      });
 }
 
 const viewDetail = (record) => {
@@ -185,7 +196,7 @@ const columns = [
     key: 'Name',
   },
   {
-    title: 'Start order',
+    title: 'Order',
     dataIndex: 'StartOrder',
     key: 'StartOrder',
   },
@@ -209,7 +220,7 @@ const columns = [
 const handleAddTest = () => {
   formState.Id = '';
   formState.Name = '';
-  formState.StartOrder = '';
+  formState.OrderFile = null;
   formState.StartParam = '';
   fileList.value = [];
 
@@ -227,16 +238,12 @@ const handleDel = (id: string) => {
 }
 
 const handleChange = (info: UploadChangeParam) => {
-  formState.StartOrder = '';
 
   if (info.fileList.length > 0) {
     const file = info.fileList[0];
     if (file.type === 'text/xml') {
-      const reader = new FileReader();
-      reader.readAsText(file.originFileObj!);
-      reader.onload = () => {
-        formState.StartOrder = reader.result as string;
-      };
+      console.log(file)
+      formState.OrderFile = file.originFileObj!;
     } else {
       console.log('The selected file is not an XML file.');
       window.alert('The selected file is not an XML file.');
@@ -244,7 +251,7 @@ const handleChange = (info: UploadChangeParam) => {
   }
 }
 const handleSubmit = async (e: MouseEvent) => {
-  if (!formState.StartOrder) {
+  if (!formState.OrderFile) {
     shakeIt.value = true; // Start shaking
     setTimeout(() => {
       shakeIt.value = false; // Stop shaking
@@ -254,21 +261,22 @@ const handleSubmit = async (e: MouseEvent) => {
   formRef.value
       .validate()
       .then(() => {
-        // fill actual work template content by id
-        axios.get('http://localhost:8080/api/v1/workTemplate/' + workTemplate.value)
+        const formData = new FormData()
+        // Append all formState properties to formData
+        for (const key in formState) {
+          formData.append(key, formState[key]);
+        }
+        for (let pair of formData.entries()) {
+          console.log(pair[0] + ', ' + pair[1]);
+        }
+
+        axios.post('http://localhost:8080/api/v1/workflow/create', formData)
             .then(response => {
               console.log('response', response);
-              formState.WorkTemplate = response.data.data
+              updateData();
+              openSubmit.value = false;
             });
-      }).then(() => {
-    console.log(formState)
-    axios.post('http://localhost:8080/api/v1/workflow/create', formState)
-        .then(response => {
-          console.log('response', response);
-          updateData();
-          openSubmit.value = false;
-        });
-  })
+      })
       .catch((error: any) => {
         console.log('error', error);
       });

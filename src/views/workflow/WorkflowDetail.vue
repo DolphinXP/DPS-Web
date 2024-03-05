@@ -6,6 +6,10 @@ import NavigatedViewer from "bpmn-js/lib/NavigatedViewer.js";
 import axios from "axios";
 import {useRoute} from "vue-router";
 
+import Splitter from 'primevue/splitter';
+import SplitterPanel from 'primevue/splitterpanel';
+
+
 let bpmnViewer: NavigatedViewer | null = null;
 let id = '';
 
@@ -91,6 +95,7 @@ async function createNewDiagram(data) {
 function refresh() {
   let canvas = bpmnViewer.get('canvas');
   canvas.zoom('fit-viewport');
+  handleZoomOut();
 }
 
 function handleZoomIn() {
@@ -144,123 +149,55 @@ function itemClicked(item) {
     </div>
 
     <div class="content">
-      <div id="canvas" class="canvas"></div>
+      <Splitter gutter-size="5" layout="vertical" style="height:100%">
+        <SplitterPanel>
+          <div id="canvas" class="canvas"></div>
+        </SplitterPanel>
+        <SplitterPanel>
 
-      <div class="detail-content">
-        <a-card size="small" style="width: 320px;" title="Jobs">
+          <div class="detail-content">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cupiditate incidunt
+            saepe sapiente? A
+            accusantium, aliquid autem consequatur cum delectus distinctio dolor doloremque dolores eius facilis hic
+            iure labore laborum laudantium magni maiores natus nesciunt nihil, non nulla odio omnis porro provident
+            quasi quidem repellendus reprehenderit repudiandae sed soluta ullam ut velit voluptates? A commodi
+            consectetur earum exercitationem itaque iusto neque repudiandae sit. Accusamus aut debitis dicta facilis
+            nesciunt possimus quisquam! Alias fugit hic impedit iure laboriosam modi neque nihil, quam quasi quia,
+            reiciendis rerum sint, sit voluptas voluptatem! Atque debitis soluta ut? Earum id laborum nostrum
+            perferendis repudiandae sed voluptatibus!
 
-          <a-input v-model="searchTerm" placeholder="Search jobs" style="margin-bottom: 5px;" @input="updateSearch"/>
-          <a-list :data-source="filteredJobs" pagination="" size="small">
-            <template #renderItem="{ item }">
-              <a-list-item :class="{'selected-item': item.key === selectedItem?.key}" style="cursor: pointer"
-                           @click="itemClicked(item)">{{ item.name }}
-              </a-list-item>
-            </template>
-          </a-list>
-        </a-card>
 
-        <a-card size="small" style="width: 320px;" title="Timeline">
-          <a-timeline>
-            <a-timeline-item color="green">Create a services site 2015-09-01</a-timeline-item>
-            <a-timeline-item color="green">Create a services site 2015-09-01</a-timeline-item>
-            <a-timeline-item color="red">
-              <p>Solve initial network problems 1</p>
-              <p>Solve initial network problems 2</p>
-              <p>Solve initial network problems 3 2015-09-01</p>
-            </a-timeline-item>
-            <a-timeline-item>
-              <p>Technical testing 1</p>
-              <p>Technical testing 2</p>
-              <p>Technical testing 3 2015-09-01</p>
-            </a-timeline-item>
-            <a-timeline-item color="gray">
-              <p>Technical testing 1</p>
-              <p>Technical testing 2</p>
-              <p>Technical testing 3 2015-09-01</p>
-            </a-timeline-item>
-            <a-timeline-item color="gray">
-              <p>Technical testing 1</p>
-              <p>Technical testing 2</p>
-              <p>Technical testing 3 2015-09-01</p>
-            </a-timeline-item>
-            <a-timeline-item color="#00CCFF">
-              <template #dot>
-                <SmileOutlined/>
-              </template>
-              <p>Custom color testing</p>
-            </a-timeline-item>
-          </a-timeline>
-        </a-card>
+          </div>
 
-        <a-card size="small" style="flex-grow: 1" title="Info">
-          <a-descriptions bordered layout="vertical" size="small">
-            <a-descriptions-item label="Product">Cloud Database</a-descriptions-item>
-            <a-descriptions-item label="Billing Mode">Prepaid</a-descriptions-item>
-            <a-descriptions-item label="Automatic Renewal">YES</a-descriptions-item>
-            <a-descriptions-item label="Order time">2018-04-24 18:00:00</a-descriptions-item>
-            <a-descriptions-item :span="2" label="Usage Time">2019-04-24 18:00:00</a-descriptions-item>
-            <a-descriptions-item :span="3" label="Status">
-              <a-badge status="processing" text="Running"/>
-            </a-descriptions-item>
-            <a-descriptions-item label="Negotiated Amount">$80.00</a-descriptions-item>
-            <a-descriptions-item label="Discount">$20.00</a-descriptions-item>
-            <a-descriptions-item label="Official Receipts">$60.00</a-descriptions-item>
-            <a-descriptions-item label="Config Info">
-              Data disk type: MongoDB
-              <br/>
-              Database version: 3.4
-              <br/>
-              Package: dds.mongo.mid
-              <br/>
-              Storage space: 10 GB
-              <br/>
-              Replication factor: 3
-              <br/>
-              Region: East China 1
-              <br/>
-            </a-descriptions-item>
-          </a-descriptions>
-        </a-card>
-      </div>
+        </SplitterPanel>
+      </Splitter>
+
     </div>
-
   </div>
 
 </template>
 
 <style scoped>
-.selected-item {
-  color: white;
-  background-color: #1890ff; /* Change this to your preferred color */
-}
 
 .container {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.ant-card {
-  margin: 0 5px;
+  height: calc(100vh - 200px);
 }
 
 .content {
-  display: flex;
-  flex-direction: column;
   height: 100%;
+  background: #f5f5f5;
 }
 
 .content .canvas {
-  height: 480px;
+  height: 100%;
   overflow: auto;
 }
 
 .content .detail-content {
-  flex: 1;
   display: flex;
   background-color: #f5f5f5;
   padding: 10px;
   overflow: auto;
+  border: 1px solid #eeeeee;
 }
 
 .top-bar {
