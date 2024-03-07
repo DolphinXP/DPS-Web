@@ -108,6 +108,13 @@ function handleZoomOut() {
   zoomScroll.stepZoom(-1);
 }
 
+function startWorkflow() {
+  axios.post('http://localhost:8080/api/v1/workflow/start/' + id)
+      .then(response => {
+        console.log('response', response);
+      });
+}
+
 // test
 let selectedItem = ref({});
 let searchTerm = ref('');
@@ -142,7 +149,7 @@ function itemClicked(item) {
         <a-button @click="refresh">Fit</a-button>
       </div>
       <div>
-        <a-button type="primary">Start</a-button>
+        <a-button type="primary" @click="startWorkflow">Start</a-button>
         <a-divider type="vertical"></a-divider>
         <a-button type="primary">Stop</a-button>
       </div>
