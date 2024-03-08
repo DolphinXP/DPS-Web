@@ -15,7 +15,8 @@
     </template>
 
     <template v-if="column.dataIndex === 'Operation'">
-
+      <a @click="startWorkflow(record.id)">Start</a>
+      <a-divider type="vertical"></a-divider>
       <a @click="viewDetail(record)">Detail</a>
       <a-divider type="vertical"></a-divider>
       <a-popconfirm
@@ -226,6 +227,13 @@ const handleAddTest = () => {
 
   openSubmit.value = true;
 
+}
+
+function startWorkflow(id) {
+  axios.post('http://localhost:8080/api/v1/workflow/start/' + id)
+      .then(response => {
+        console.log('response', response);
+      });
 }
 
 const handleDel = (id: string) => {

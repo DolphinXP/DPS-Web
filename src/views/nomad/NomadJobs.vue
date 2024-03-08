@@ -1,6 +1,8 @@
 <template>
   <div class="pull-right">
-    <a-button @click="handleNew">Add Test</a-button>
+    <a-button type="primary" @click="handleNew">Add Test</a-button>
+    <a-divider type="vertical"></a-divider>
+    <a-button @click="handleDeleteAll">Delete All</a-button>
   </div>
   <div>
     <a-table #bodyCell="{ column, text, record }" :columns="columns" :dataSource="dataSource">
@@ -147,6 +149,14 @@ const handleStop = (record: any) => {
 const handleDel = (record: any) => {
   currentId.value = record.ID;
   axios.delete('http://localhost:8080/api/v1/nomad/jobs/delete/' + currentId.value)
+      .then(response => {
+        console.log('response', response);
+        updateData();
+      })
+};
+
+const handleDeleteAll = () => {
+  axios.delete('http://localhost:8080/api/v1/nomad/jobs/deleteAll')
       .then(response => {
         console.log('response', response);
         updateData();
