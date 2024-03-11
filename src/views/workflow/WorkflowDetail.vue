@@ -8,6 +8,7 @@ import {useRoute} from "vue-router";
 
 import Splitter from 'primevue/splitter';
 import SplitterPanel from 'primevue/splitterpanel';
+import moment from "moment/moment";
 
 
 let bpmnViewer: NavigatedViewer | null = null;
@@ -15,30 +16,49 @@ let id = '';
 
 
 let workflow = {}
+const dpsJobs = ref([]);
+const currentElement = ref({type: 'bpmn:Process'});
 
-const jobs = [
-  {
-    key: '1',
-    name: 'Mike',
-  },
-  {
-    key: '2',
-    name: 'John',
-  },
-  {
-    key: '4',
-    name: 'Tom',
-  },
-  {
-    key: '5',
-    name: 'Michael',
-  },
-  {
-    key: '6',
-    name: 'Alice',
-  },
-];
 
+const jobColumns = [
+  {
+    title: 'No',
+    dataIndex: 'No',
+    key: 'No',
+    customRender: (row: any, index: any) => (row.index + 1),
+  },
+  {
+    title: 'JobId',
+    dataIndex: 'JobId',
+    key: 'JobId',
+  },
+  {
+    title: 'Status',
+    dataIndex: 'State',
+    key: 'State',
+    customRender: (row: any) => {
+      if (row.record.TaskState.Failed) {
+        return "Failed";
+      } else if (row.record.TaskState.State === "dead") {
+        return "Success"
+      } else {
+        return row.record.TaskState.State
+      }
+    }
+  },
+  {
+    title: 'StartTime',
+    dataIndex: 'StartTime',
+    key: 'StartTime',
+    customRender: (row: any) => moment(row.record.StartTime).format('YYYY-MM-DD HH:mm:ss'),
+  },
+  {
+    title: 'EndTime',
+    dataIndex: 'EndTime',
+    key: 'EndTime',
+    customRender: (row: any) => moment(row.record.EndTime).format('YYYY-MM-DD HH:mm:ss'),
+  },
+]
 
 onMounted(() => {
   const route = useRoute();
@@ -63,21 +83,48 @@ onMounted(() => {
     // }
   });
 
-  let eventBus = bpmnViewer.get('eventBus');
-  eventBus.on('element.click', function (event: any) {
-    console.log('element.click', event.element.id);
-  });
 
   // get workflow by id
+  updateData(true);
+  setInterval(() => {
+    // updateData(false);
+  }, 1000);
+
+  // add event listener
+  let eventBus = bpmnViewer.get('eventBus');
+  eventBus!.on('element.click', function (event: any) {
+    currentElement.value = event.element;
+    updateData(false);
+  });
+})
+
+function updateData(createDiagram = false) {
   axios.get('http://localhost:8080/api/v1/workflow/' + id).then(
       response => {
         workflow = response.data.data;
-        console.log(workflow)
-        createNewDiagram(workflow.WorkTemplate.BpmnXml);
+        if (workflow.DpsJobs) {
+          dpsJobs.value = workflow.DpsJobs;
+          dpsJobs.value.sort((a, b) => -moment(a.StartTime) + moment(b.StartTime));
+
+          let elementId = currentElement.value.id;
+          if (currentElement.value.type === 'bpmn:SubProcess') {
+            dpsJobs.value = dpsJobs.value.filter((job: any) => job.BpmnElementParentId === elementId);
+          } else if (currentElement.value.type === 'bpmn:Task') {
+            // find dpsJobs in workflow by elementId
+            dpsJobs.value = dpsJobs.value.filter((job: any) => job.BpmnElementId === elementId);
+          } else if (currentElement.value.type === 'bpmn:Process') {
+            dpsJobs.value = workflow.DpsJobs;
+          } else {
+            dpsJobs.value = [];
+          }
+        }
+
+        if (createDiagram) {
+          createNewDiagram(workflow.WorkTemplate.BpmnXml);
+        }
       }
   ).catch(error => console.log(error))
-
-})
+}
 
 async function createNewDiagram(data) {
   // 将字符串转换成图显示出来
@@ -155,25 +202,21 @@ function itemClicked(item) {
       </div>
     </div>
 
+
     <div class="content">
-      <Splitter gutter-size="5" layout="vertical" style="height:100%">
+      <Splitter layout="vertical" style="height:100%">
         <SplitterPanel>
           <div id="canvas" class="canvas"></div>
         </SplitterPanel>
-        <SplitterPanel>
+        <SplitterPanel style="overflow: auto;">
+          <div style="width: 100%; ">
+            <a-table :columns="jobColumns" :dataSource="[... dpsJobs]" type="small">
 
-          <div class="detail-content">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Cupiditate incidunt
-            saepe sapiente? A
-            accusantium, aliquid autem consequatur cum delectus distinctio dolor doloremque dolores eius facilis hic
-            iure labore laborum laudantium magni maiores natus nesciunt nihil, non nulla odio omnis porro provident
-            quasi quidem repellendus reprehenderit repudiandae sed soluta ullam ut velit voluptates? A commodi
-            consectetur earum exercitationem itaque iusto neque repudiandae sit. Accusamus aut debitis dicta facilis
-            nesciunt possimus quisquam! Alias fugit hic impedit iure laboriosam modi neque nihil, quam quasi quia,
-            reiciendis rerum sint, sit voluptas voluptatem! Atque debitis soluta ut? Earum id laborum nostrum
-            perferendis repudiandae sed voluptatibus!
-
-
+            </a-table>
           </div>
+
+          <!--          <div class="detail-content">-->
+          <!--          </div>-->
 
         </SplitterPanel>
       </Splitter>
@@ -215,4 +258,7 @@ function itemClicked(item) {
   border: 1px solid #eeeeee;
 }
 
+::v-deep(.ant-table-row) {
+  cursor: pointer;
+}
 </style>
