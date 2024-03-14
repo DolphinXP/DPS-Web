@@ -97,7 +97,7 @@ onMounted(() => {
 
   // for test purpose: set timer to update dpsJob list
   setInterval(() =>
-          retrieveDpsJobs(),
+      //  retrieveDpsJobs(),
       3000
   );
 
@@ -295,12 +295,13 @@ function showDetailModal(record: any) {
 
             <div class="vertical-space"></div>
 
-            <h3>Program argument</h3>
-            <pre class="code-display">{{ selectedJob.ProgramArgument }}</pre>
           </TabPanel>
 
-          <TabPanel header="Program Result">
-             <pre class="code-display">
+          <TabPanel header="Program In/Out">
+            <h3>Program argument</h3>
+            <pre class="code-display">{{ selectedJob.ProgramArgument }}</pre>
+            <h3>Program result</h3>
+            <pre class="code-display">
               {{ selectedJob.ProgramResult }}
             </pre>
           </TabPanel>
