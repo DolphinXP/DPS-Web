@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 
-import {computed, onMounted, ref} from "vue";
+import {onMounted, ref} from "vue";
 import BpmnJS from "bpmn-js/lib/NavigatedViewer.js";
 import NavigatedViewer from "bpmn-js/lib/NavigatedViewer.js";
 import axios from "axios";
@@ -8,7 +8,8 @@ import {useRoute} from "vue-router";
 import moment from "moment";
 import Splitter from 'primevue/splitter';
 import SplitterPanel from 'primevue/splitterpanel';
-
+import TabView from 'primevue/tabview';
+import TabPanel from 'primevue/tabpanel';
 
 let bpmnViewer: NavigatedViewer | null = null;
 let id = '';
@@ -18,7 +19,9 @@ let workflow = {}
 const workflowDpsJobs = ref([]);
 const dpsJobs = ref([]);
 const currentElement = ref({type: 'bpmn:Process'});
-
+const detailModal = ref(false);
+const jobHistory = ref([]);
+const selectedJob = ref({});
 
 const jobColumns = [
   {
@@ -36,8 +39,21 @@ const jobColumns = [
     title: 'Status',
     dataIndex: 'State',
     key: 'State',
-    customRender: (row: any) => row.record?.TaskState.State
-
+    customRender: (row: any) => {
+      if (row.record?.TaskState.State.length === 0) {
+        return "Ready"
+      } else if (row.record?.TaskState.State === 'Started') {
+        return "Running"
+      } else if (row.record?.TaskState.State === 'Terminated') {
+        if (row.record?.ExitCode === 0) {
+          return "Success"
+        } else {
+          return "Failed with code: " + row.record?.ExitCode
+        }
+      } else {
+        return row.record?.TaskState.State
+      }
+    }
   },
   {
     title: 'StartTime',
@@ -97,6 +113,12 @@ function retrieveDpsJobs() {
   axios.get('http://localhost:8080/api/v1/workflow/dpsJobs/' + id).then(
       response => {
         workflowDpsJobs.value = response.data.data;
+
+        // sync selectedJob value
+        if (selectedJob.value != null) {
+          let selectedJobId = selectedJob.value.JobId; // Assuming selectedJob has an 'id' property
+          selectedJob.value = workflowDpsJobs.value.find(job => job.JobId === selectedJobId);
+        }
 
       }
   ).then(response => {
@@ -173,25 +195,15 @@ function startWorkflow() {
       });
 }
 
-// test
-let selectedItem = ref({});
-let searchTerm = ref('');
-
-function updateSearch(event) {
-  // You might not need this if Ant Design handles reactivity for you.
-  searchTerm.value = event.target.value;
-}
-
-let filteredJobs = computed(() => {
-  if (!searchTerm.value) {
-    return jobs;
-  }
-  return jobs.filter(job => job.name.toLowerCase().includes(searchTerm.value.toLowerCase()));
-});
-
-function itemClicked(item) {
-  console.log('itemClicked', item);
-  selectedItem.value = item;
+function showDetailModal(record: any) {
+  selectedJob.value = record
+  axios.get('http://localhost:8080/api/v1/dpsJob/history/' + selectedJob.value.JobId).then(
+      response => {
+        jobHistory.value = response.data.data;
+        console.log(jobHistory.value)
+      }
+  ).catch(error => console.log(error))
+  detailModal.value = true;
 }
 
 </script>
@@ -226,7 +238,11 @@ function itemClicked(item) {
           </div>
 
           <div class="detail-content">
-            <a-table :columns="jobColumns" :dataSource="dpsJobs" :pagination="{defaultPageSize: 100}"
+            <a-table :columns="jobColumns" :customRow="(record) => {
+            return {
+            onClick: (event) => {showDetailModal(record)},       // click row
+            }}" :dataSource="dpsJobs"
+                     :pagination="{defaultPageSize: 100}"
                      style="width:100%;"
                      type="small">
 
@@ -239,9 +255,110 @@ function itemClicked(item) {
     </div>
   </div>
 
+  <a-modal v-model:open="detailModal" :footer="null" :title="selectedJob.Name"
+           style="width: 90%; top: 30px; ">
+    <div class="modal-container">
+      <div class="modal-timeline">
+        <a-timeline>
+          <a-timeline-item v-for="(item, index) in jobHistory" :color="item.ExitCode == 0 ? (index == 0? 'blue' :
+          'green') : 'red'" @click="selectedJob=item">
+            <p style="font-weight: bold;">
+              {{ item.Name }}
+            </p>
+            <div style="font-size: small">
+              <span class="modal-time-block">{{ moment(item.StartTime).format('YYYY-MM-DD HH:mm:ss') }}</span> -
+              <span class="modal-time-block">{{ moment(item.EndTime).format('YYYY-MM-DD HH:mm:ss') }}</span>
+            </div>
+
+          </a-timeline-item>
+        </a-timeline>
+      </div>
+      <div class="modal-job-detail">
+        <TabView>
+          <TabPanel header="Basic Info">
+            <a-descriptions bordered>
+              <a-descriptions-item label="Name">{{ selectedJob.Name }}</a-descriptions-item>
+              <a-descriptions-item label="Start time">{{
+                  moment(selectedJob.StartTime).format('YYYY-MM-DD HH:mm:ss')
+                }}
+              </a-descriptions-item>
+              <a-descriptions-item label="End time">{{
+                  moment(selectedJob.EndTime).format('YYYY-MM-DD HH:mm:ss')
+                }}
+              </a-descriptions-item>
+              <a-descriptions-item label="Status">{{ selectedJob.TaskState.State }}</a-descriptions-item>
+              <a-descriptions-item label="Exit code">
+                {{ selectedJob.ExitCode }}
+              </a-descriptions-item>
+            </a-descriptions>
+
+            <div class="vertical-space"></div>
+
+            <h3>Program argument</h3>
+            <pre class="code-display">{{ selectedJob.ProgramArgument }}</pre>
+          </TabPanel>
+
+          <TabPanel header="Program Result">
+             <pre class="code-display">
+              {{ selectedJob.ProgramResult }}
+            </pre>
+          </TabPanel>
+          <TabPanel header="Program Log">
+            <h3>Stdout</h3>
+            <pre class="code-display">
+              {{ selectedJob.ProcessStdOut }}
+            </pre>
+            <h3>Stderr</h3>
+            <pre class="code-display">
+              {{ selectedJob.ProcessStdErr }}
+            </pre>
+          </TabPanel>
+        </TabView>
+      </div>
+    </div>
+  </a-modal>
 </template>
 
 <style scoped>
+.vertical-space {
+  height: 10px;
+}
+
+.code-display {
+  min-height: 200px;
+  max-height: 600px;
+  overflow: auto;
+  font-family: "Courier New", serif;
+  font-size: small;
+  padding: 10px;
+  margin: 10px 0;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+}
+
+.modal-job-detail {
+  width: 100%;
+  overflow: auto;
+}
+
+.modal-time-block {
+  color: rgba(51, 115, 87, 0.5);
+  padding: 3px;
+}
+
+.modal-container {
+  display: flex;
+  width: 100%;
+  min-height: 600px;
+  padding: 10px;
+}
+
+.modal-timeline {
+  padding: 30px;
+  overflow: auto;
+  max-height: 1000px;
+  min-width: 400px;
+}
 
 .container {
   height: calc(100vh - 200px);
@@ -285,6 +402,10 @@ function itemClicked(item) {
 }
 
 ::v-deep(.ant-table-row) {
+  cursor: pointer;
+}
+
+::v-deep(.ant-timeline-item-content) {
   cursor: pointer;
 }
 </style>
