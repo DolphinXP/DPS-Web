@@ -256,20 +256,21 @@ function showDetailModal(record: any) {
   </div>
 
   <a-modal v-model:open="detailModal" :footer="null" :title="selectedJob.Name"
-           style="width: 90%; top: 30px; ">
+           style="width: 80%; top: 30px; ">
     <div class="modal-container">
       <div class="modal-timeline">
         <a-timeline>
           <a-timeline-item v-for="(item, index) in jobHistory" :color="item.ExitCode == 0 ? (index == 0? 'blue' :
           'green') : 'red'" @click="selectedJob=item">
-            <p style="font-weight: bold;">
-              {{ item.Name }}
-            </p>
-            <div style="font-size: small">
-              <span class="modal-time-block">{{ moment(item.StartTime).format('YYYY-MM-DD HH:mm:ss') }}</span> -
-              <span class="modal-time-block">{{ moment(item.EndTime).format('YYYY-MM-DD HH:mm:ss') }}</span>
+            <div :class="{'timeline-item-selected': item.JobId === selectedJob.JobId}">
+              <p style="font-weight: bold;">
+                {{ item.Name }}
+              </p>
+              <div style="font-size: small">
+                <span class="modal-time-block">{{ moment(item.StartTime).format('YYYY-MM-DD HH:mm:ss') }}</span> -
+                <span class="modal-time-block">{{ moment(item.EndTime).format('YYYY-MM-DD HH:mm:ss') }}</span>
+              </div>
             </div>
-
           </a-timeline-item>
         </a-timeline>
       </div>
@@ -322,6 +323,13 @@ function showDetailModal(record: any) {
 <style scoped>
 .vertical-space {
   height: 10px;
+}
+
+.timeline-item-selected {
+  padding: 3px;
+  border-radius: 5px;
+  color: white;
+  background-color: #1890ff;
 }
 
 .code-display {
