@@ -5,10 +5,9 @@ import BpmnJS from "bpmn-js/lib/NavigatedViewer.js";
 import NavigatedViewer from "bpmn-js/lib/NavigatedViewer.js";
 import axios from "axios";
 import {useRoute} from "vue-router";
-
+import moment from "moment";
 import Splitter from 'primevue/splitter';
 import SplitterPanel from 'primevue/splitterpanel';
-import moment from "moment/moment";
 
 
 let bpmnViewer: NavigatedViewer | null = null;
@@ -16,6 +15,7 @@ let id = '';
 
 
 let workflow = {}
+const workflowDpsJobs = ref([]);
 const dpsJobs = ref([]);
 const currentElement = ref({type: 'bpmn:Process'});
 
@@ -28,35 +28,28 @@ const jobColumns = [
     customRender: (row: any, index: any) => (row.index + 1),
   },
   {
-    title: 'JobId',
-    dataIndex: 'JobId',
-    key: 'JobId',
+    title: 'Name',
+    dataIndex: 'Name',
+    key: 'Name',
   },
   {
     title: 'Status',
     dataIndex: 'State',
     key: 'State',
-    customRender: (row: any) => {
-      if (row.record.TaskState.Failed) {
-        return "Failed";
-      } else if (row.record.TaskState.State === "dead") {
-        return "Success"
-      } else {
-        return row.record.TaskState.State
-      }
-    }
+    customRender: (row: any) => row.record?.TaskState.State
+
   },
   {
     title: 'StartTime',
     dataIndex: 'StartTime',
     key: 'StartTime',
-    customRender: (row: any) => moment(row.record.StartTime).format('YYYY-MM-DD HH:mm:ss'),
+    customRender: (row: any) => moment(row.record?.StartTime).format('YYYY-MM-DD HH:mm:ss'),
   },
   {
     title: 'EndTime',
     dataIndex: 'EndTime',
     key: 'EndTime',
-    customRender: (row: any) => moment(row.record.EndTime).format('YYYY-MM-DD HH:mm:ss'),
+    customRender: (row: any) => moment(row.record?.EndTime).format('YYYY-MM-DD HH:mm:ss'),
   },
 ]
 
@@ -83,47 +76,65 @@ onMounted(() => {
     // }
   });
 
-
   // get workflow by id
   updateData(true);
-  setInterval(() => {
-    // updateData(false);
-  }, 1000);
+
+  // for test purpose: set timer to update dpsJob list
+  setInterval(() =>
+          retrieveDpsJobs(),
+      3000
+  );
 
   // add event listener
   let eventBus = bpmnViewer.get('eventBus');
   eventBus!.on('element.click', function (event: any) {
     currentElement.value = event.element;
-    updateData(false);
+    filterDpsJobs()
   });
 })
+
+function retrieveDpsJobs() {
+  axios.get('http://localhost:8080/api/v1/workflow/dpsJobs/' + id).then(
+      response => {
+        workflowDpsJobs.value = response.data.data;
+
+      }
+  ).then(response => {
+    filterDpsJobs();
+  });
+}
+
+function filterDpsJobs() {
+  if (workflowDpsJobs.value) {
+
+    dpsJobs.value = workflowDpsJobs.value.sort((a, b) => -moment(a.StartTime) + moment(b.StartTime));
+
+    let elementId = currentElement.value.id;
+    if (currentElement.value.type === 'bpmn:SubProcess') {
+      dpsJobs.value = workflowDpsJobs.value.filter((job: any) => job.BpmnElementParentId === elementId);
+    } else if (currentElement.value.type === 'bpmn:Task') {
+      // find dpsJobs in workflow by elementId
+      dpsJobs.value = workflowDpsJobs.value.filter((job: any) => job.BpmnElementId === elementId);
+    } else if (currentElement.value.type === 'bpmn:Process') {
+      //dpsJobs.value = workflowDpsJobs.value;
+    } else {
+      dpsJobs.value = [];
+    }
+  }
+}
 
 function updateData(createDiagram = false) {
   axios.get('http://localhost:8080/api/v1/workflow/' + id).then(
       response => {
         workflow = response.data.data;
-        if (workflow.DpsJobs) {
-          dpsJobs.value = workflow.DpsJobs;
-          dpsJobs.value.sort((a, b) => -moment(a.StartTime) + moment(b.StartTime));
-
-          let elementId = currentElement.value.id;
-          if (currentElement.value.type === 'bpmn:SubProcess') {
-            dpsJobs.value = dpsJobs.value.filter((job: any) => job.BpmnElementParentId === elementId);
-          } else if (currentElement.value.type === 'bpmn:Task') {
-            // find dpsJobs in workflow by elementId
-            dpsJobs.value = dpsJobs.value.filter((job: any) => job.BpmnElementId === elementId);
-          } else if (currentElement.value.type === 'bpmn:Process') {
-            dpsJobs.value = workflow.DpsJobs;
-          } else {
-            dpsJobs.value = [];
-          }
-        }
 
         if (createDiagram) {
           createNewDiagram(workflow.WorkTemplate.BpmnXml);
         }
       }
-  ).catch(error => console.log(error))
+  ).then(response => {
+    retrieveDpsJobs();
+  }).catch(error => console.log(error))
 }
 
 async function createNewDiagram(data) {
@@ -209,14 +220,18 @@ function itemClicked(item) {
           <div id="canvas" class="canvas"></div>
         </SplitterPanel>
         <SplitterPanel style="overflow: auto;">
-          <div style="width: 100%; ">
-            <a-table :columns="jobColumns" :dataSource="[... dpsJobs]" type="small">
+          <div class="job-list-title">
+            <h3>Job List</h3>
+            <span>Element: {{ currentElement.type.split(':')[1] }} / Count: {{ dpsJobs.length }}</span>
+          </div>
+
+          <div class="detail-content">
+            <a-table :columns="jobColumns" :dataSource="dpsJobs" :pagination="{defaultPageSize: 100}"
+                     style="width:100%;"
+                     type="small">
 
             </a-table>
           </div>
-
-          <!--          <div class="detail-content">-->
-          <!--          </div>-->
 
         </SplitterPanel>
       </Splitter>
@@ -248,6 +263,17 @@ function itemClicked(item) {
   padding: 10px;
   overflow: auto;
   border: 1px solid #eeeeee;
+}
+
+.job-list-title {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  position: sticky;
+  top: 0;
+  background-color: #f8f8f8;
+  z-index: 1000;
 }
 
 .top-bar {

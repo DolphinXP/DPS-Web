@@ -139,15 +139,7 @@ const updateData = () => {
       }
   ).catch(error => console.log(error))
 
-  // load work flow template
-  axios.get('http://localhost:8080/api/v1/workTemplate/all').then(
-      response => {
-        workTemplateOptions.value = response.data.data.map(data => ({
-          label: data.Name,
-          value: data.id,
-        }));
-      }
-  ).catch(error => console.log(error))
+
 };
 const handleOrderView = (record) => {
   axios.get(record.OrderFilePath)
@@ -225,7 +217,18 @@ const handleAddTest = () => {
   formState.StartParam = '';
   fileList.value = [];
 
-  openSubmit.value = true;
+  // load work flow template
+  axios.get('http://localhost:8080/api/v1/workTemplate/all').then(
+      response => {
+        workTemplateOptions.value = response.data.data.map(data => ({
+          label: data.Name,
+          value: data.id,
+        }));
+
+        openSubmit.value = true;
+      }
+  ).catch(error => console.log(error))
+
 
 }
 
